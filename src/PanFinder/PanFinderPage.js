@@ -3,8 +3,20 @@ import React, { useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
 
 import { usePanFinderApi } from '../Api/usePanFinderApi'
-import { Heading, Flex, Button, Box, Text } from '../Primitives'
 import Spinner from '../App/Spinner'
+import { Heading, Flex, Button, Box, Text } from '../Primitives'
+
+function getScoreBackgroundColor(result, maxScore) {
+  const normalizedScore = maxScore > 0 ? result.overall_score / maxScore : 0
+  const red = Math.round(255 * (1 - normalizedScore))
+  const green = Math.round(180 * normalizedScore)
+  return `rgba(${red}, ${green}, 0, 0.3)`
+}
+
+function getScoreTextColor(result, maxScore) {
+  const normalizedScore = maxScore > 0 ? result.overall_score / maxScore : 0
+  return normalizedScore > 0.7 ? '#f7fafc' : '#e2e8f0'
+}
 
 function PanFinderPage() {
   const [inputValue, setInputValue] = useState('')
@@ -82,9 +94,9 @@ function PanFinderPage() {
               'Look for studies on solid polarizers for cold neutrons where the experimental energy is less than -19 A and the publication year is 2016 or 2017.',
               'Look for research on magnetic diffuse scattering in CuMnO2 where the temperature is between 1.5 K and 300 K and the sample mass is 10,000.',
               'Look for research about Crystal structure where the publication year is 2025.',
-            ].map((query, index) => (
+            ].map((query) => (
               <Button
-                key={index}
+                key={query}
                 onClick={() => setInputValue(query)}
                 variant="outline"
                 sx={{
@@ -104,7 +116,7 @@ function PanFinderPage() {
                   },
                 }}
               >
-                {query.length > 60 ? `${query.substring(0, 60)}...` : query}
+                {query.length > 60 ? `${query.slice(0, 60)}...` : query}
               </Button>
             ))}
           </Flex>
@@ -269,163 +281,155 @@ function PanFinderPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.results.map((result, index) => (
-                    <tr
-                      key={result.doi}
-                      style={{
-                        borderBottom: '1px solid #4a5568',
-                        backgroundColor:
-                          index % 2 === 0 ? '#2d3748' : '#374151',
-                      }}
-                    >
-                      <td
+                  {data.results.map((result, index) => {
+                    const maxScore = Math.max(
+                      ...data.results.map((r) => r.overall_score || 0),
+                    )
+                    return (
+                      <tr
+                        key={result.doi}
                         style={{
-                          padding: '12px 8px',
-                          fontSize: '12px',
-                          fontFamily: 'monospace',
-                          maxWidth: '200px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          borderBottom: '1px solid #4a5568',
+                          backgroundColor:
+                            index % 2 === 0 ? '#2d3748' : '#374151',
                         }}
-                        title={result.doi}
                       >
-                        <a
-                          href={`https://doi.org/${result.doi}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <td
                           style={{
-                            color: '#63b3ed',
-                            textDecoration: 'none',
-                            fontWeight: '500',
+                            padding: '12px 8px',
+                            fontSize: '12px',
+                            fontFamily: 'monospace',
+                            maxWidth: '200px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
-                          onMouseOver={(e) => {
-                            e.target.style.textDecoration = 'underline'
-                          }}
-                          onMouseOut={(e) => {
-                            e.target.style.textDecoration = 'none'
-                          }}
+                          title={result.doi}
                         >
-                          {result.doi}
-                        </a>
-                      </td>
-                      <td style={{ padding: '12px 8px', maxWidth: '300px' }}>
-                        <Text
-                          sx={{
-                            fontWeight: 'medium',
-                            lineHeight: 1.4,
-                            fontSize: '13px',
-                            color: '#e2e8f0',
-                          }}
-                        >
-                          {result.title}
-                        </Text>
-                      </td>
-                      <td
-                        style={{
-                          padding: '12px 8px',
-                          textAlign: 'center',
-                          backgroundColor: (() => {
-                            const maxScore = Math.max(
-                              ...data.results.map((r) => r.overall_score || 0),
-                            )
-                            const normalizedScore =
-                              maxScore > 0 ? result.overall_score / maxScore : 0
-                            const red = Math.round(255 * (1 - normalizedScore))
-                            const green = Math.round(180 * normalizedScore)
-                            return `rgba(${red}, ${green}, 0, 0.3)`
-                          })(),
-                          fontWeight: '600',
-                          borderRadius: '4px',
-                        }}
-                      >
-                        <Text
-                          sx={{
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            color: (() => {
-                              const maxScore = Math.max(
-                                ...data.results.map(
-                                  (r) => r.overall_score || 0,
-                                ),
-                              )
-                              const normalizedScore =
-                                maxScore > 0
-                                  ? result.overall_score / maxScore
-                                  : 0
-                              return normalizedScore > 0.7
-                                ? '#f7fafc'
-                                : '#e2e8f0'
-                            })(),
-                          }}
-                        >
-                          {result.overall_score.toFixed(3)}
-                        </Text>
-                      </td>
-                      <td
-                        style={{
-                          padding: '12px 8px',
-                          textAlign: 'center',
-                          fontSize: '13px',
-                          color: '#cbd5e0',
-                        }}
-                      >
-                        {result.similarity_score.toFixed(3)}
-                      </td>
-                      <td
-                        style={{
-                          padding: '12px 8px',
-                          textAlign: 'center',
-                          fontSize: '13px',
-                          color: '#cbd5e0',
-                        }}
-                      >
-                        {result.chunk_similarity_score.toFixed(3)}
-                      </td>
-                      <td
-                        style={{
-                          padding: '12px 8px',
-                          textAlign: 'center',
-                          fontSize: '13px',
-                          color: '#cbd5e0',
-                        }}
-                      >
-                        <span style={{ marginRight: '4px' }}>
-                          {result.full_match_score.toFixed(3)}
-                        </span>
-                        <span
+                          <a
+                            href={`https://doi.org/${result.doi}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: '#63b3ed',
+                              textDecoration: 'none',
+                              fontWeight: '500',
+                            }}
+                            onMouseOver={(e) => {
+                              e.target.style.textDecoration = 'underline'
+                            }}
+                            onMouseOut={(e) => {
+                              e.target.style.textDecoration = 'none'
+                            }}
+                            onFocus={(e) => {
+                              e.target.style.textDecoration = 'underline'
+                            }}
+                            onBlur={(e) => {
+                              e.target.style.textDecoration = 'none'
+                            }}
+                          >
+                            {result.doi}
+                          </a>
+                        </td>
+                        <td style={{ padding: '12px 8px', maxWidth: '300px' }}>
+                          <Text
+                            sx={{
+                              fontWeight: 'medium',
+                              lineHeight: 1.4,
+                              fontSize: '13px',
+                              color: '#e2e8f0',
+                            }}
+                          >
+                            {result.title}
+                          </Text>
+                        </td>
+                        <td
                           style={{
-                            color:
-                              result.full_match_score > 0
-                                ? '#68d391'
-                                : '#fc8181',
+                            padding: '12px 8px',
+                            textAlign: 'center',
+                            backgroundColor: getScoreBackgroundColor(
+                              result,
+                              maxScore,
+                            ),
+                            fontWeight: '600',
+                            borderRadius: '4px',
                           }}
                         >
-                          {result.full_match_score > 0 ? '✓' : '✗'}
-                        </span>
-                      </td>
-                      <td
-                        style={{
-                          padding: '12px 8px',
-                          textAlign: 'center',
-                          fontSize: '13px',
-                          color: '#cbd5e0',
-                        }}
-                      >
-                        {result.partial_match_score.toFixed(3)}
-                      </td>
-                      <td
-                        style={{
-                          padding: '12px 8px',
-                          textAlign: 'center',
-                          fontSize: '13px',
-                          color: '#cbd5e0',
-                        }}
-                      >
-                        {result.keyword_score.toFixed(3)}
-                      </td>
-                    </tr>
-                  ))}
+                          <Text
+                            sx={{
+                              fontWeight: 'bold',
+                              fontSize: '13px',
+                              color: getScoreTextColor(result, maxScore),
+                            }}
+                          >
+                            {result.overall_score.toFixed(3)}
+                          </Text>
+                        </td>
+                        <td
+                          style={{
+                            padding: '12px 8px',
+                            textAlign: 'center',
+                            fontSize: '13px',
+                            color: '#cbd5e0',
+                          }}
+                        >
+                          {result.similarity_score.toFixed(3)}
+                        </td>
+                        <td
+                          style={{
+                            padding: '12px 8px',
+                            textAlign: 'center',
+                            fontSize: '13px',
+                            color: '#cbd5e0',
+                          }}
+                        >
+                          {result.chunk_similarity_score.toFixed(3)}
+                        </td>
+                        <td
+                          style={{
+                            padding: '12px 8px',
+                            textAlign: 'center',
+                            fontSize: '13px',
+                            color: '#cbd5e0',
+                          }}
+                        >
+                          <span style={{ marginRight: '4px' }}>
+                            {result.full_match_score.toFixed(3)}
+                          </span>
+                          <span
+                            style={{
+                              color:
+                                result.full_match_score > 0
+                                  ? '#68d391'
+                                  : '#fc8181',
+                            }}
+                          >
+                            {result.full_match_score > 0 ? '✓' : '✗'}
+                          </span>
+                        </td>
+                        <td
+                          style={{
+                            padding: '12px 8px',
+                            textAlign: 'center',
+                            fontSize: '13px',
+                            color: '#cbd5e0',
+                          }}
+                        >
+                          {result.partial_match_score.toFixed(3)}
+                        </td>
+                        <td
+                          style={{
+                            padding: '12px 8px',
+                            textAlign: 'center',
+                            fontSize: '13px',
+                            color: '#cbd5e0',
+                          }}
+                        >
+                          {result.keyword_score.toFixed(3)}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </Box>
