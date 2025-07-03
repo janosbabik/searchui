@@ -39,6 +39,10 @@ function Navigation() {
         </Box>
       </NavLink>
 
+      <NavLink to="/pan-finder" sx={{ alignSelf: 'center', mx: 3 }}>
+        PaN-Finder
+      </NavLink>
+
       <Route path="/search">
         {!query?.trim() && <Redirect to="/" />}
         <Flex

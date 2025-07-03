@@ -1,9 +1,11 @@
 import { useMediaQuery } from '@react-hookz/web'
+import React from 'react'
 import { Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
 import ExplorePage from '../Explore/ExplorePage'
 import HomePage from '../Home/HomePage'
+import PanFinderPage from '../PanFinder/PanFinderPage'
 import { Box, Flex } from '../Primitives'
 import { breakpoints } from '../breakpoints'
 import { useTheme } from '../theme'
@@ -32,6 +34,10 @@ function App() {
             <Route exact path="/">
               <ScrollToTop />
               <HomePage />
+            </Route>
+            <Route exact path="/pan-finder">
+              <ScrollToTop />
+              <PanFinderPage />
             </Route>
             <Route exact path="/search">
               <ExplorePage isDesktop={isDesktop} />

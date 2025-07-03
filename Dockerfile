@@ -4,6 +4,9 @@ WORKDIR /app
 ARG API
 ENV REACT_APP_API=$API
 
+ARG PAN_FINDER_API
+ENV REACT_APP_PAN_FINDER_API=$PAN_FINDER_API
+
 COPY package.json ./
 COPY yarn.lock ./
 RUN yarn install
@@ -11,6 +14,8 @@ RUN yarn install
 COPY . ./
 RUN yarn build
 
-FROM socialengine/nginx-spa
-COPY --from=build /app/build /app
+FROM nginx:alpine
+COPY nginx-spa.conf /etc/nginx/nginx.conf
+COPY --from=build /app/build /usr/share/nginx/html
+
 EXPOSE 80
