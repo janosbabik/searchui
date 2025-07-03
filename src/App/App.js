@@ -28,7 +28,7 @@ function App() {
         <Box
           mx={[3, 3, 3, 4]}
           mb={5}
-          sx={{ flexGrow: 1, maxWidth: ['none', 'none', 'none', '1440px'] }}
+          sx={{ flexGrow: 1, maxWidth: ['none', 'none', 'none', 'none'] }}
         >
           <Switch>
             <Route exact path="/">
