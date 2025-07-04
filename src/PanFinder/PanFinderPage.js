@@ -361,7 +361,6 @@ function PanFinderPage() {
                               maxScore,
                             ),
                             fontWeight: '600',
-                            borderRadius: '4px',
                           }}
                         >
                           <Text
