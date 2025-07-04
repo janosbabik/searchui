@@ -33,6 +33,15 @@ function PanFinderPage() {
     setInputValue(evt.target.value)
   }
 
+  function handleKeyDown(evt) {
+    if (evt.key === 'Enter' && !evt.shiftKey) {
+      evt.preventDefault()
+      if (inputValue.trim()) {
+        search(inputValue.trim())
+      }
+    }
+  }
+
   return (
     <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
       <Heading
@@ -73,6 +82,7 @@ function PanFinderPage() {
           <Textarea
             value={inputValue}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             placeholder="Enter search text... (e.g., 'datasets where publisher is ESS')"
             sx={{
               width: '100%',
@@ -468,20 +478,50 @@ function PanFinderPage() {
           ) : (
             <Box
               sx={{
-                p: 4,
-                bg: 'muted',
-                borderRadius: '8px',
+                p: [4, 5],
+                bg: 'background',
+                borderRadius: '12px',
                 textAlign: 'center',
-                border: '1px solid',
-                borderColor: 'muted',
+                border: '2px dashed',
+                borderColor: 'secondary',
+                position: 'relative',
+                overflow: 'hidden',
+                ':before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background:
+                    'linear-gradient(135deg, rgba(36, 114, 179, 0.05) 0%, rgba(100, 110, 177, 0.05) 50%, rgba(187, 70, 119, 0.05) 100%)',
+                  pointerEvents: 'none',
+                },
               }}
             >
-              <Text sx={{ fontStyle: 'italic', color: 'muted', fontSize: 2 }}>
-                🔍 No results found for your search query.
-              </Text>
-              <Text sx={{ mt: 2, fontSize: 1, color: 'muted' }}>
-                Try different keywords or check the example queries above.
-              </Text>
+              <Box sx={{ position: 'relative', zIndex: 1 }}>
+                <Text
+                  sx={{
+                    fontWeight: 'semibold',
+                    color: 'text',
+                    fontSize: [2, 3],
+                    mb: 2,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  No results found for your search
+                </Text>
+                <Text
+                  sx={{
+                    fontSize: [1, 2],
+                    color: 'text',
+                    opacity: 0.7,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Try different keywords or check the example queries above
+                </Text>
+              </Box>
             </Box>
           )}
 
