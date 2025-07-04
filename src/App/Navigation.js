@@ -39,8 +39,60 @@ function Navigation() {
         </Box>
       </NavLink>
 
-      <NavLink to="/pan-finder" sx={{ alignSelf: 'center', mx: 3 }}>
-        PaN-Finder
+      <NavLink
+        to="/pan-finder"
+        sx={{
+          alignSelf: 'center',
+          mx: 3,
+          px: 3,
+          py: 2,
+          background:
+            'linear-gradient(135deg, #2472b3 0%, #646eb1 50%, #bb4677 100%)',
+          backgroundSize: '200% 200%',
+          color: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: 3,
+          fontSize: 1,
+          textTransform: 'none',
+          position: 'relative',
+          overflow: 'hidden',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 15px rgba(36, 114, 179, 0.3)',
+          animation: 'gradientShift 3s ease infinite',
+          '@keyframes gradientShift': {
+            '0%': { backgroundPosition: '0% 50%' },
+            '50%': { backgroundPosition: '100% 50%' },
+            '100%': { backgroundPosition: '0% 50%' },
+          },
+          ':hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(36, 114, 179, 0.4)',
+            backgroundSize: '300% 300%',
+            animation: 'gradientShift 1.5s ease infinite',
+          },
+          ':active': {
+            transform: 'translateY(0)',
+            boxShadow: '0 4px 15px rgba(36, 114, 179, 0.3)',
+          },
+          '::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background:
+              'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+            transition: 'left 0.5s',
+          },
+          ':hover::before': {
+            left: '100%',
+          },
+        }}
+      >
+        <Flex sx={{ alignItems: 'center', gap: 2 }}>
+          <FiSearch size={16} />
+          PaN-Finder
+        </Flex>
       </NavLink>
 
       <Route path="/search">
