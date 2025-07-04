@@ -215,7 +215,7 @@ function PanFinderPage() {
                 overflowX: 'auto',
                 border: '1px solid',
                 borderColor: '#4a5568',
-                borderRadius: '8px',
+                borderRadius: '3px',
                 bg: '#2d3748',
               }}
             >
@@ -529,45 +529,82 @@ function PanFinderPage() {
           <Box
             sx={{
               mt: 4,
-              p: 3,
-              bg: 'muted',
-              borderRadius: '8px',
-              border: '1px solid #4a5568',
+              bg: '#1a202c',
+              borderRadius: '3px',
+              border: '1px solid #2d3748',
+              overflow: 'hidden',
             }}
           >
             <details>
               <summary
                 style={{
+                  padding: '12px 16px',
+                  fontSize: '13px',
+                  fontWeight: '500',
                   cursor: 'pointer',
-                  fontWeight: '600',
-                  fontSize: '14px',
-                  padding: '4px 0',
+                  color: '#a0aec0',
+                  backgroundColor: '#2d3748',
+                  borderBottom: '1px solid #374151',
+                  userSelect: 'none',
+                  outline: 'none',
                 }}
               >
                 Query Details
               </summary>
               <Box
                 sx={{
-                  mt: 2,
-                  pt: 2,
-                  borderTop: '1px solid',
-                  borderColor: 'muted',
+                  p: 3,
                 }}
               >
-                <Text sx={{ mb: 2 }}>
-                  <strong>Original Query:</strong> {data.original_query}
-                </Text>
+                <Box sx={{ mb: 3 }}>
+                  <Text
+                    sx={{
+                      mb: 2,
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    Original Query
+                  </Text>
+                  <Box
+                    sx={{
+                      bg: '#111827',
+                      p: 2,
+                      borderRadius: '4px',
+                      border: '1px solid #374151',
+                      fontFamily: 'monospace',
+                      fontSize: '13px',
+                      lineHeight: 1.5,
+                      color: '#d1d5db',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {data.original_query}
+                  </Box>
+                </Box>
                 {data.structured_query && (
-                  <Box sx={{ mt: 2 }}>
-                    <Text sx={{ mb: 2 }}>
-                      <strong>Structured Query:</strong>
+                  <Box>
+                    <Text
+                      sx={{
+                        mb: 2,
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#718096',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                      }}
+                    >
+                      Structured Query
                     </Text>
                     <Box
                       sx={{
-                        bg: 'background',
+                        bg: '#111827',
                         p: 2,
-                        borderRadius: '1px',
-                        border: '1px solid #4a5568',
+                        borderRadius: '4px',
+                        border: '1px solid #374151',
                         overflow: 'auto',
                       }}
                     >
@@ -576,6 +613,8 @@ function PanFinderPage() {
                           fontSize: '12px',
                           margin: 0,
                           fontFamily: 'monospace',
+                          color: '#d1d5db',
+                          lineHeight: 1.4,
                         }}
                       >
                         {JSON.stringify(data.structured_query, null, 2)}
