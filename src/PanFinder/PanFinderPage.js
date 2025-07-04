@@ -129,14 +129,23 @@ function PanFinderPage() {
         <Box
           sx={{
             mt: 3,
-            p: 3,
+            p: [3, 4],
             bg: 'red',
             color: 'white',
             borderRadius: '8px',
             border: '1px solid #e53e3e',
           }}
+          role="alert"
         >
-          <Text sx={{ fontWeight: 'medium' }}>⚠️ Error: {error.message}</Text>
+          <Heading as="h3" sx={{ mb: 2, fontSize: 3 }}>
+            Something went wrong
+          </Heading>
+          <Text as="p" sx={{ mb: 2 }}>
+            {error.message}
+          </Text>
+          <Text as="p" sx={{ fontSize: 1, opacity: 0.9 }}>
+            Please try again with a different query or check your connection.
+          </Text>
         </Box>
       )}
 
