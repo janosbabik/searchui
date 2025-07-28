@@ -1,6 +1,6 @@
 import { Textarea } from '@rebass/forms'
 import React, { useState } from 'react'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch, FiChevronDown, FiChevronRight } from 'react-icons/fi'
 
 import { usePanFinderApi } from '../Api/usePanFinderApi'
 import { Heading, Flex, Button, Box, Text } from '../Primitives'
@@ -32,7 +32,7 @@ function DocumentDetails({ details, isLoading, doi }) {
   if (isLoading) {
     return (
       <tr>
-        <td colSpan="3" style={{ padding: '16px', textAlign: 'center' }}>
+        <td colSpan="4" style={{ padding: '16px', textAlign: 'center' }}>
           <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
             Loading document details...
           </Text>
@@ -44,7 +44,7 @@ function DocumentDetails({ details, isLoading, doi }) {
   if (details?.error) {
     return (
       <tr>
-        <td colSpan="3" style={{ padding: '16px' }}>
+        <td colSpan="4" style={{ padding: '16px' }}>
           <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
             <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>
               Error loading details: {details.error}
@@ -61,10 +61,10 @@ function DocumentDetails({ details, isLoading, doi }) {
 
   return (
     <tr>
-      <td colSpan="3" style={{ padding: 0, backgroundColor: '#1a202c' }}>
+      <td colSpan="4" style={{ padding: 0, backgroundColor: '#1a202c' }}>
         <Box sx={{ p: 4, borderTop: '1px solid #4a5568' }}>
           <Box sx={{ display: 'grid', gap: 3 }}>
-            {/* ID */}
+            {/* DOI */}
             <Box>
               <Text
                 sx={{
@@ -74,7 +74,7 @@ function DocumentDetails({ details, isLoading, doi }) {
                   mb: 1,
                 }}
               >
-                ID
+                DOI
               </Text>
               <Text
                 sx={{
@@ -83,7 +83,47 @@ function DocumentDetails({ details, isLoading, doi }) {
                   fontFamily: 'monospace',
                 }}
               >
-                {details.id}
+                <a
+                  href={`https://doi.org/${details.doi}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#63b3ed',
+                    textDecoration: 'none',
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.textDecoration = 'underline'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.textDecoration = 'none'
+                  }}
+                >
+                  {details.doi}
+                </a>
+              </Text>
+            </Box>
+
+            {/* Title */}
+            <Box>
+              <Text
+                sx={{
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: '#a0aec0',
+                  mb: 1,
+                }}
+              >
+                Title
+              </Text>
+              <Text
+                sx={{
+                  fontSize: '13px',
+                  color: '#e2e8f0',
+                  lineHeight: 1.4,
+                  fontWeight: 'medium',
+                }}
+              >
+                {details.title}
               </Text>
             </Box>
 
@@ -122,8 +162,8 @@ function DocumentDetails({ details, isLoading, doi }) {
                 <Box
                   sx={{
                     bg: '#2d3748',
-                    p: 3,
-                    borderRadius: '4px',
+                    p: 2,
+                    borderRadius: '2px',
                     border: '1px solid #4a5568',
                     maxHeight: '150px',
                     overflowY: 'auto',
@@ -154,8 +194,8 @@ function DocumentDetails({ details, isLoading, doi }) {
                 <Box
                   sx={{
                     bg: '#2d3748',
-                    p: 3,
-                    borderRadius: '4px',
+                    p: 2,
+                    borderRadius: '2px',
                     border: '1px solid #4a5568',
                     maxHeight: '200px',
                     overflowY: 'auto',
@@ -188,7 +228,7 @@ function DocumentDetails({ details, isLoading, doi }) {
                 <Box
                   sx={{
                     bg: '#111827',
-                    p: 3,
+                    p: 2,
                     borderRadius: '4px',
                     border: '1px solid #4a5568',
                     maxHeight: '200px',
@@ -197,7 +237,7 @@ function DocumentDetails({ details, isLoading, doi }) {
                 >
                   <pre
                     style={{
-                      fontSize: '12px',
+                      fontSize: '11px',
                       color: '#d1d5db',
                       margin: 0,
                       fontFamily: 'monospace',
@@ -240,16 +280,33 @@ function ResultTableRow({
           animation: 'fadeInUp 0.2s ease-out forwards',
           animationDelay: `${0.2 + index * 0.02}s`,
           cursor: 'pointer',
-          transition: 'background-color 0.2s ease',
+          transition: 'all 0.2s ease',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = '#4a5568'
+          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)'
+          e.currentTarget.style.transform = 'translateY(-1px)'
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor =
             index % 2 === 0 ? '#2d3748' : '#374151'
+          e.currentTarget.style.boxShadow = 'none'
+          e.currentTarget.style.transform = 'translateY(0)'
         }}
       >
+        <td
+          style={{
+            padding: '12px 8px',
+            textAlign: 'center',
+            width: '40px',
+          }}
+        >
+          {isExpanded ? (
+            <FiChevronDown size={16} style={{ color: '#a0aec0' }} />
+          ) : (
+            <FiChevronRight size={16} style={{ color: '#a0aec0' }} />
+          )}
+        </td>
         <td
           style={{
             padding: '12px 8px',
@@ -669,6 +726,20 @@ function PanFinderPage() {
             </Heading>
             <Text
               sx={{
+                fontSize: 0,
+                color: '#a0aec0',
+                fontStyle: 'italic',
+                ml: 3,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <FiChevronRight size={12} />
+              Click rows to view details
+            </Text>
+            <Text
+              sx={{
                 fontSize: 1,
                 color: 'muted',
                 bg: 'muted',
@@ -707,6 +778,18 @@ function PanFinderPage() {
                       backgroundColor: '#1a202c',
                     }}
                   >
+                    <th
+                      style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        fontWeight: '600',
+                        fontSize: '13px',
+                        color: '#e2e8f0',
+                        width: '40px',
+                      }}
+                    >
+                      {/* Expand/Collapse column */}
+                    </th>
                     <th
                       style={{
                         padding: '12px 8px',
