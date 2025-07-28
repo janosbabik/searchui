@@ -18,161 +18,367 @@ const exampleQueries = [
 
 function getScoreBackgroundColor(result, maxScore) {
   const normalizedScore = maxScore > 0 ? result.overall_score / maxScore : 0
-  const red = Math.round(255 * (1 - normalizedScore))
-  const green = Math.round(180 * normalizedScore)
-  return `rgba(${red}, ${green}, 0, 0.3)`
+  const red = Math.round(120 * (1 - normalizedScore))
+  const green = Math.round(100 * normalizedScore)
+  return `rgb(${red}, ${green}, 0)`
 }
 
 function getScoreTextColor(result, maxScore) {
   const normalizedScore = maxScore > 0 ? result.overall_score / maxScore : 0
-  return normalizedScore > 0.7 ? '#f7fafc' : '#e2e8f0'
+  return normalizedScore > 0.7 ? '#d2d9e1ff' : '#b6bfcaff'
 }
 
-function ResultTableRow({ result, index, maxScore }) {
+function DocumentDetails({ details, isLoading, doi }) {
+  if (isLoading) {
+    return (
+      <tr>
+        <td colSpan="3" style={{ padding: '16px', textAlign: 'center' }}>
+          <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
+            Loading document details...
+          </Text>
+        </td>
+      </tr>
+    )
+  }
+
+  if (details?.error) {
+    return (
+      <tr>
+        <td colSpan="3" style={{ padding: '16px' }}>
+          <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
+            <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>
+              Error loading details: {details.error}
+            </Text>
+          </Box>
+        </td>
+      </tr>
+    )
+  }
+
+  if (!details) {
+    return null
+  }
+
   return (
-    <tr
-      key={result.doi || index}
-      style={{
-        borderBottom: '1px solid #4a5568',
-        backgroundColor: index % 2 === 0 ? '#2d3748' : '#374151',
-        opacity: 0,
-        animation: 'fadeInUp 0.2s ease-out forwards',
-        animationDelay: `${0.2 + index * 0.02}s`,
-      }}
-    >
-      <td
-        style={{
-          padding: '12px 8px',
-          fontSize: '12px',
-          fontFamily: 'monospace',
-          maxWidth: '200px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-        title={result.doi}
-      >
-        <a
-          href={`https://doi.org/${result.doi}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            color: '#63b3ed',
-            textDecoration: 'none',
-            fontWeight: '500',
-          }}
-          onMouseOver={(e) => {
-            e.target.style.textDecoration = 'underline'
-          }}
-          onMouseOut={(e) => {
-            e.target.style.textDecoration = 'none'
-          }}
-          onFocus={(e) => {
-            e.target.style.textDecoration = 'underline'
-          }}
-          onBlur={(e) => {
-            e.target.style.textDecoration = 'none'
-          }}
-        >
-          {result.doi}
-        </a>
-      </td>
-      <td style={{ padding: '12px 8px', maxWidth: '300px' }}>
-        <Text
-          sx={{
-            fontWeight: 'medium',
-            lineHeight: 1.4,
-            fontSize: '13px',
-            color: '#e2e8f0',
-          }}
-        >
-          {result.title}
-        </Text>
-      </td>
-      <td
-        style={{
-          padding: '12px 8px',
-          textAlign: 'center',
-          backgroundColor: getScoreBackgroundColor(result, maxScore),
-          fontWeight: '600',
-        }}
-      >
-        <Text
-          sx={{
-            fontWeight: 'bold',
-            fontSize: '13px',
-            color: getScoreTextColor(result, maxScore),
-          }}
-        >
-          {(result.overall_score || 0).toFixed(3)}
-        </Text>
-      </td>
-      <td
-        style={{
-          padding: '12px 8px',
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#cbd5e0',
-        }}
-      >
-        {(result.similarity_score || 0).toFixed(3)}
-      </td>
-      <td
-        style={{
-          padding: '12px 8px',
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#cbd5e0',
-        }}
-      >
-        {(result.chunk_similarity_score || 0).toFixed(3)}
-      </td>
-      <td
-        style={{
-          padding: '12px 8px',
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#cbd5e0',
-        }}
-      >
-        <span style={{ marginRight: '4px' }}>
-          {(result.full_match_score || 0).toFixed(3)}
-        </span>
-        <span
-          style={{
-            color: (result.full_match_score || 0) > 0 ? '#68d391' : '#fc8181',
-          }}
-        >
-          {(result.full_match_score || 0) > 0 ? '✓' : '✗'}
-        </span>
-      </td>
-      <td
-        style={{
-          padding: '12px 8px',
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#cbd5e0',
-        }}
-      >
-        {(result.partial_match_score || 0).toFixed(3)}
-      </td>
-      <td
-        style={{
-          padding: '12px 8px',
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#cbd5e0',
-        }}
-      >
-        {(result.keyword_score || 0).toFixed(3)}
+    <tr>
+      <td colSpan="3" style={{ padding: 0, backgroundColor: '#1a202c' }}>
+        <Box sx={{ p: 4, borderTop: '1px solid #4a5568' }}>
+          <Box sx={{ display: 'grid', gap: 3 }}>
+            {/* ID */}
+            <Box>
+              <Text
+                sx={{
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  color: '#a0aec0',
+                  mb: 1,
+                }}
+              >
+                ID
+              </Text>
+              <Text
+                sx={{
+                  fontSize: '13px',
+                  color: '#e2e8f0',
+                  fontFamily: 'monospace',
+                }}
+              >
+                {details.id}
+              </Text>
+            </Box>
+
+            {/* Facility */}
+            {details.facility_name && (
+              <Box>
+                <Text
+                  sx={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#a0aec0',
+                    mb: 1,
+                  }}
+                >
+                  Facility
+                </Text>
+                <Text sx={{ fontSize: '13px', color: '#e2e8f0' }}>
+                  {details.facility_name}
+                </Text>
+              </Box>
+            )}
+
+            {/* Summary */}
+            {details.summary && (
+              <Box>
+                <Text
+                  sx={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#a0aec0',
+                    mb: 1,
+                  }}
+                >
+                  Summary
+                </Text>
+                <Box
+                  sx={{
+                    bg: '#2d3748',
+                    p: 3,
+                    borderRadius: '4px',
+                    border: '1px solid #4a5568',
+                    maxHeight: '150px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  <Text
+                    sx={{ fontSize: '13px', color: '#e2e8f0', lineHeight: 1.5 }}
+                  >
+                    {details.summary}
+                  </Text>
+                </Box>
+              </Box>
+            )}
+
+            {/* Text Content */}
+            {details.text && (
+              <Box>
+                <Text
+                  sx={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#a0aec0',
+                    mb: 1,
+                  }}
+                >
+                  Content
+                </Text>
+                <Box
+                  sx={{
+                    bg: '#2d3748',
+                    p: 3,
+                    borderRadius: '4px',
+                    border: '1px solid #4a5568',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  <Text
+                    sx={{ fontSize: '13px', color: '#e2e8f0', lineHeight: 1.5 }}
+                  >
+                    {details.text.length > 500
+                      ? `${details.text.substring(0, 500)}...`
+                      : details.text}
+                  </Text>
+                </Box>
+              </Box>
+            )}
+
+            {/* Raw Data */}
+            {details.raw && (
+              <Box>
+                <Text
+                  sx={{
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#a0aec0',
+                    mb: 1,
+                  }}
+                >
+                  Raw Data
+                </Text>
+                <Box
+                  sx={{
+                    bg: '#111827',
+                    p: 3,
+                    borderRadius: '4px',
+                    border: '1px solid #4a5568',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  <pre
+                    style={{
+                      fontSize: '12px',
+                      color: '#d1d5db',
+                      margin: 0,
+                      fontFamily: 'monospace',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {typeof details.raw === 'object'
+                      ? JSON.stringify(details.raw, null, 2)
+                      : details.raw}
+                  </pre>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        </Box>
       </td>
     </tr>
   )
 }
 
+function ResultTableRow({
+  result,
+  index,
+  maxScore,
+  onRowClick,
+  isExpanded,
+  documentDetails,
+  isLoadingDetails,
+}) {
+  return (
+    <>
+      <tr
+        key={result.doi || index}
+        onClick={() => onRowClick(result.doi)}
+        style={{
+          borderBottom: '1px solid #4a5568',
+          backgroundColor: index % 2 === 0 ? '#2d3748' : '#374151',
+          opacity: 0,
+          animation: 'fadeInUp 0.2s ease-out forwards',
+          animationDelay: `${0.2 + index * 0.02}s`,
+          cursor: 'pointer',
+          transition: 'background-color 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#4a5568'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor =
+            index % 2 === 0 ? '#2d3748' : '#374151'
+        }}
+      >
+        <td
+          style={{
+            padding: '12px 8px',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            maxWidth: '120px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+          title={result.doi}
+        >
+          <a
+            href={`https://doi.org/${result.doi}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()} // Prevent row click when clicking link
+            style={{
+              color: '#63b3ed',
+              textDecoration: 'none',
+              fontWeight: '500',
+            }}
+            onMouseOver={(e) => {
+              e.target.style.textDecoration = 'underline'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.textDecoration = 'none'
+            }}
+            onFocus={(e) => {
+              e.target.style.textDecoration = 'underline'
+            }}
+            onBlur={(e) => {
+              e.target.style.textDecoration = 'none'
+            }}
+          >
+            {result.doi}
+          </a>
+        </td>
+        <td style={{ padding: '12px 8px', maxWidth: '300px' }}>
+          <Text
+            sx={{
+              fontWeight: 'medium',
+              lineHeight: 1.4,
+              fontSize: '13px',
+              color: '#e2e8f0',
+            }}
+          >
+            {result.title}
+          </Text>
+        </td>
+        <td
+          style={{
+            padding: '12px 8px',
+            textAlign: 'center',
+            backgroundColor: getScoreBackgroundColor(result, maxScore),
+            fontWeight: '600',
+          }}
+        >
+          <Text
+            sx={{
+              fontWeight: 'normal',
+              fontSize: '13px',
+              color: getScoreTextColor(result, maxScore),
+            }}
+          >
+            {(result.overall_score || 0).toFixed(3)}
+          </Text>
+        </td>
+      </tr>
+      {isExpanded && (
+        <DocumentDetails
+          details={documentDetails}
+          isLoading={isLoadingDetails}
+          doi={result.doi}
+        />
+      )}
+    </>
+  )
+}
+
 function PanFinderPage() {
   const [inputValue, setInputValue] = useState('')
-  const { data, error, isLoading, streamingSteps, search } = usePanFinderApi()
+  const [expandedRows, setExpandedRows] = useState(new Set())
+  const [documentDetails, setDocumentDetails] = useState({})
+  const [loadingDetails, setLoadingDetails] = useState(new Set())
+  const {
+    data,
+    error,
+    isLoading,
+    streamingSteps,
+    search,
+    fetchDocumentDetails,
+  } = usePanFinderApi()
+
+  const handleRowExpand = async (doi) => {
+    const newExpandedRows = new Set(expandedRows)
+
+    if (expandedRows.has(doi)) {
+      // Collapse the row
+      newExpandedRows.delete(doi)
+      setExpandedRows(newExpandedRows)
+    } else {
+      // Expand the row
+      newExpandedRows.add(doi)
+      setExpandedRows(newExpandedRows)
+
+      // Fetch document details if not already loaded
+      if (!documentDetails[doi]) {
+        const newLoadingDetails = new Set(loadingDetails)
+        newLoadingDetails.add(doi)
+        setLoadingDetails(newLoadingDetails)
+
+        try {
+          const details = await fetchDocumentDetails(doi)
+          setDocumentDetails((prev) => ({ ...prev, [doi]: details }))
+        } catch (err) {
+          console.error('Failed to fetch document details:', err)
+          setDocumentDetails((prev) => ({
+            ...prev,
+            [doi]: { error: err.message },
+          }))
+        } finally {
+          const newLoadingDetailsAfter = new Set(loadingDetails)
+          newLoadingDetailsAfter.delete(doi)
+          setLoadingDetails(newLoadingDetailsAfter)
+        }
+      }
+    }
+  }
 
   const handleSearch = () => {
     if (inputValue.trim()) {
@@ -497,7 +703,7 @@ function PanFinderPage() {
                 <thead>
                   <tr
                     style={{
-                      borderBottom: '2px solid #4a5568',
+                      borderBottom: '1px solid #4a5568',
                       backgroundColor: '#1a202c',
                     }}
                   >
@@ -534,61 +740,6 @@ function PanFinderPage() {
                     >
                       Overall
                     </th>
-                    <th
-                      style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        color: '#e2e8f0',
-                      }}
-                    >
-                      Similarity
-                    </th>
-                    <th
-                      style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        color: '#e2e8f0',
-                      }}
-                    >
-                      Chunk Sim.
-                    </th>
-                    <th
-                      style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        color: '#e2e8f0',
-                      }}
-                    >
-                      Full Match
-                    </th>
-                    <th
-                      style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        color: '#e2e8f0',
-                      }}
-                    >
-                      Partial Match
-                    </th>
-                    <th
-                      style={{
-                        padding: '12px 8px',
-                        textAlign: 'center',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        color: '#e2e8f0',
-                      }}
-                    >
-                      Keywords
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -602,6 +753,10 @@ function PanFinderPage() {
                         result={result}
                         index={index}
                         maxScore={maxScore}
+                        onRowClick={handleRowExpand}
+                        isExpanded={expandedRows.has(result.doi)}
+                        documentDetails={documentDetails[result.doi]}
+                        isLoadingDetails={loadingDetails.has(result.doi)}
                       />
                     )
                   })}

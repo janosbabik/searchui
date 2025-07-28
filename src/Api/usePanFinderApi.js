@@ -132,6 +132,32 @@ const usePanFinderApi = () => {
     }
   }, [])
 
+  const fetchDocumentDetails = useCallback(async (doi) => {
+    if (!doi || typeof doi !== 'string' || doi.trim() === '') {
+      throw new Error('DOI is required and must be a non-empty string')
+    }
+
+    try {
+      const response = await fetch(
+        `${PAN_FINDER_API_BASE}/search/document/${encodeURIComponent(doi)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      return await response.json()
+    } catch (error_) {
+      throw new Error(`Failed to fetch document details: ${error_.message}`)
+    }
+  }, [])
+
   const reset = useCallback(() => {
     setData(null)
     setError(null)
@@ -146,6 +172,7 @@ const usePanFinderApi = () => {
     streamingSteps,
     search,
     reset,
+    fetchDocumentDetails,
   }
 }
 
