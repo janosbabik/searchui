@@ -130,7 +130,7 @@ function ResultsDisplay({
                     color: '#e2e8f0',
                   }}
                 >
-                  Overall
+                  Score
                 </th>
               </tr>
             </thead>
