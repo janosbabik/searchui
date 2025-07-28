@@ -977,7 +977,7 @@ function PanFinderPage() {
                     {data.original_query || 'No query available'}
                   </Box>
                 </Box>
-                {data.structured_query && (
+                {data.raw_structured_data && (
                   <Box>
                     <Text
                       sx={{
@@ -989,7 +989,7 @@ function PanFinderPage() {
                         letterSpacing: '0.05em',
                       }}
                     >
-                      Structured Query
+                      Structured Data
                     </Text>
                     <Box
                       sx={{
@@ -1009,7 +1009,7 @@ function PanFinderPage() {
                           lineHeight: 1.4,
                         }}
                       >
-                        {JSON.stringify(data.structured_query, null, 2)}
+                        {JSON.stringify(data.raw_structured_data, null, 2)}
                       </pre>
                     </Box>
                   </Box>
