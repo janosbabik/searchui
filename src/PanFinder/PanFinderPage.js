@@ -33,9 +33,24 @@ function DocumentDetails({ details, isLoading, doi }) {
     return (
       <tr>
         <td colSpan="4" style={{ padding: '16px', textAlign: 'center' }}>
-          <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
-            Loading document details...
-          </Text>
+          <Flex sx={{ alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                border: '2px solid transparent',
+                borderTop: '2px solid #48bb78',
+                borderRight: '2px solid #48bb78',
+                backgroundColor: 'transparent',
+                flexShrink: 0,
+                animation: 'spin 1s linear infinite',
+              }}
+            />
+            <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
+              Loading document details...
+            </Text>
+          </Flex>
         </td>
       </tr>
     )
