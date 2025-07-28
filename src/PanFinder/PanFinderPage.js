@@ -20,6 +20,7 @@ function PanFinderPage() {
     isLoading,
     streamingSteps,
     search,
+    searchWithStructuredData,
     fetchDocumentDetails,
   } = usePanFinderApi()
 
@@ -64,6 +65,10 @@ function PanFinderPage() {
     }
   }
 
+  const handleStructuredSearch = (structuredData, originalQuery) => {
+    searchWithStructuredData(structuredData, originalQuery)
+  }
+
   function handleSubmit(evt) {
     evt.preventDefault()
     handleSearch()
@@ -104,7 +109,7 @@ function PanFinderPage() {
         loadingDetails={loadingDetails}
         handleRowExpand={handleRowExpand}
       />
-      <QueryDetails data={data} />
+      <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
     </Box>
   )
 }
