@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-const PAN_FINDER_API_BASE =
-  process.env.REACT_APP_PAN_FINDER_API || 'http://127.0.0.1:8080'
+import { searchRequest, fetchDocumentDetailsRequest } from './panFinderApi'
 
 const usePanFinderApi = () => {
   const [data, setData] = useState(null)
@@ -19,7 +18,6 @@ const usePanFinderApi = () => {
     [],
   )
 
-  /* eslint-disable sonarjs/cognitive-complexity */
   const search = useCallback(async (query) => {
     if (!query || typeof query !== 'string' || query.trim() === '') {
       setError(new Error('Query is required and must be a non-empty string'))
@@ -32,92 +30,31 @@ const usePanFinderApi = () => {
     setData(null)
     setStreamingSteps([])
 
-    // Cancel any in-flight request
     if (controllerRef.current) {
       controllerRef.current.abort()
     }
     const controller = new AbortController()
     controllerRef.current = controller
 
+    const handleEvent = (event) => {
+      setStreamingSteps((prev) => [...prev, event])
+      switch (event.event) {
+        case 'results':
+          setData(event.data)
+          break
+        case 'error':
+          setError(new Error(event.data.message))
+          break
+        default:
+          // Handle other events if necessary
+          break
+      }
+    }
+
     try {
-      const searchData = { query: query.trim() }
-      const response = await fetch(`${PAN_FINDER_API_BASE}/search`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(searchData),
-        signal: controller.signal,
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      let currentEvent = null
-      let currentData = null
-
-      const processStream = async () => {
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          // eslint-disable-next-line no-await-in-loop
-          const { done, value } = await reader.read()
-          if (done) {
-            break
-          }
-
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
-
-          for (const line of lines) {
-            const trimmedLine = line.trim()
-
-            if (trimmedLine.startsWith('event: ')) {
-              currentEvent = trimmedLine.slice(7).trim()
-            } else if (trimmedLine.startsWith('data: ')) {
-              currentData = trimmedLine.slice(6).trim()
-            } else if (trimmedLine === '' && currentEvent && currentData) {
-              // Empty line indicates end of event, process the event-data pair
-              const eventType = currentEvent
-              const eventData = currentData
-              try {
-                const parsed = JSON.parse(eventData)
-                setStreamingSteps((prev) => [
-                  ...prev,
-                  { event: eventType, data: parsed, timestamp: Date.now() },
-                ])
-                if (eventType === 'results') {
-                  setData(parsed)
-                }
-                if (eventType === 'error') {
-                  throw new Error(parsed.message)
-                }
-              } catch {
-                // Skip malformed data
-              }
-              // Reset for next event
-              currentEvent = null
-              currentData = null
-            } else {
-              // Ignore other lines (comments, unknown fields, etc.)
-            }
-          }
-        }
-      }
-
-      await processStream()
+      await searchRequest(query, handleEvent, controller.signal)
     } catch (error_) {
-      if (error_.name === 'AbortError') {
-        if (isMounted.current) {
-          setIsLoading(false)
-        }
-        return
-      }
-      if (isMounted.current) {
+      if (error_.name !== 'AbortError' && isMounted.current) {
         setError(error_)
         setData(null)
       }
@@ -125,7 +62,6 @@ const usePanFinderApi = () => {
       if (isMounted.current) {
         setIsLoading(false)
       }
-      // Clear the controller reference
       if (controllerRef.current === controller) {
         controllerRef.current = null
       }
@@ -133,26 +69,8 @@ const usePanFinderApi = () => {
   }, [])
 
   const fetchDocumentDetails = useCallback(async (doi) => {
-    if (!doi || typeof doi !== 'string' || doi.trim() === '') {
-      throw new Error('DOI is required and must be a non-empty string')
-    }
-
     try {
-      const response = await fetch(
-        `${PAN_FINDER_API_BASE}/search/document/${encodeURIComponent(doi)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      return await response.json()
+      return await fetchDocumentDetailsRequest(doi)
     } catch (error_) {
       throw new Error(`Failed to fetch document details: ${error_.message}`)
     }
