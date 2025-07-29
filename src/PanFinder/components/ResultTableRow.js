@@ -20,7 +20,6 @@ function ResultTableRow({
         key={result.doi || index}
         onClick={() => onRowClick(result.doi)}
         style={{
-          borderBottom: '1px solid #4a5568',
           backgroundColor: index % 2 === 0 ? '#2d3748' : '#374151',
           opacity: 0,
           animation: 'fadeInUp 0.2s ease-out forwards',
