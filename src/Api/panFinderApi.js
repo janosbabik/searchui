@@ -92,7 +92,7 @@ export const fetchDocumentDetailsRequest = async (doi) => {
     throw new Error('DOI is required and must be a non-empty string')
   }
   const response = await apiRequest(
-    `${PAN_FINDER_API_BASE}/search/document/${encodeURIComponent(doi)}`,
+    `${PAN_FINDER_API_BASE}/document/${encodeURIComponent(doi)}`,
     {
       method: 'GET',
       headers: { 'Content-Type': JSON_CONTENT_TYPE },
