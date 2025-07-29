@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { FiEdit3, FiSave, FiX } from 'react-icons/fi'
+import { FiEdit3, FiSearch, FiX } from 'react-icons/fi'
 
 import { Box, Text, Button, Flex } from '../../Primitives'
 
 function QueryDetails({ data, onStructuredSearch }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState('')
+  const [error, setError] = useState(null)
 
   if (!data) {
     return null
@@ -16,13 +17,13 @@ function QueryDetails({ data, onStructuredSearch }) {
     setIsEditing(true)
   }
 
-  const handleSave = () => {
+  const handleSearch = () => {
     try {
       const parsedData = JSON.parse(editedData)
       onStructuredSearch(parsedData, data.original_query)
       setIsEditing(false)
     } catch (error) {
-      alert('Invalid JSON format. Please check your syntax.')
+      setError(error.message || 'Please enter valid JSON data.')
     }
   }
 
@@ -114,28 +115,11 @@ function QueryDetails({ data, onStructuredSearch }) {
                 >
                   Structured Data
                 </Text>
-                {!isEditing ? (
-                  <Button
-                    variant="action"
-                    onClick={handleEditStart}
-                    sx={{
-                      p: 1,
-                      ml: 0,
-                      fontSize: '12px',
-                      color: '#a0aec0',
-                      ':hover': {
-                        color: '#e2e8f0',
-                      },
-                    }}
-                    title="Edit structured data"
-                  >
-                    <FiEdit3 size={14} />
-                  </Button>
-                ) : (
+                {isEditing ? (
                   <Flex sx={{ gap: 1 }}>
                     <Button
                       variant="action"
-                      onClick={handleSave}
+                      onClick={handleSearch}
                       sx={{
                         p: 1,
                         ml: 0,
@@ -147,7 +131,7 @@ function QueryDetails({ data, onStructuredSearch }) {
                       }}
                       title="Save and search"
                     >
-                      <FiSave size={14} />
+                      <FiSearch size={14} />
                     </Button>
                     <Button
                       variant="action"
@@ -166,21 +150,51 @@ function QueryDetails({ data, onStructuredSearch }) {
                       <FiX size={14} />
                     </Button>
                   </Flex>
+                ) : (
+                  <Button
+                    variant="action"
+                    onClick={handleEditStart}
+                    sx={{
+                      p: 1,
+                      ml: 0,
+                      fontSize: '12px',
+                      color: '#a0aec0',
+                      ':hover': {
+                        color: '#e2e8f0',
+                      },
+                    }}
+                    title="Edit structured data"
+                  >
+                    <FiEdit3 size={14} />
+                  </Button>
                 )}
               </Flex>
               <Box
                 sx={{
                   bg: '#111827',
                   p: 2,
-                  borderRadius: '4px',
+                  borderRadius: '2px',
                   border: '1px solid #374151',
                   overflow: 'auto',
                 }}
               >
+                {error && (
+                  <Text
+                    sx={{
+                      color: '#e53e3e',
+                      mb: 2,
+                      fontSize: '12px',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {error}
+                  </Text>
+                )}
                 {isEditing ? (
                   <textarea
                     value={editedData}
                     onChange={(e) => setEditedData(e.target.value)}
+                    aria-label="Edit structured data JSON"
                     style={{
                       width: '100%',
                       minHeight: '200px',
@@ -190,7 +204,7 @@ function QueryDetails({ data, onStructuredSearch }) {
                       color: '#d1d5db',
                       backgroundColor: '#1f2937',
                       border: '1px solid #374151',
-                      borderRadius: '4px',
+                      borderRadius: '2px',
                       outline: 'none',
                       resize: 'vertical',
                     }}
