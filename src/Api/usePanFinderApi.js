@@ -1,9 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
+import { useFeedback } from './FeedbackContext'
 import {
   searchRequest,
   structuredSearchRequest,
   fetchDocumentDetailsRequest,
+  submitFeedbackRequest,
 } from './panFinderApi'
 
 const usePanFinderApi = () => {
@@ -11,6 +13,7 @@ const usePanFinderApi = () => {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [streamingSteps, setStreamingSteps] = useState([])
+  const { setCurrentQueryId } = useFeedback()
   const controllerRef = useRef(null)
   const isMounted = useRef(true)
 
@@ -22,26 +25,34 @@ const usePanFinderApi = () => {
     [],
   )
 
-  const handleEvent = useCallback((event) => {
-    setStreamingSteps((prev) => [...prev, event])
-    switch (event.event) {
-      case 'results':
-        setData(event.data)
-        break
-      case 'error':
-        setError(new Error(event.data.message))
-        break
-      default:
-        // Handle other events if necessary
-        break
-    }
-  }, [])
+  const handleEvent = useCallback(
+    (event) => {
+      setStreamingSteps((prev) => [...prev, event])
+      switch (event.event) {
+        case 'results':
+          setData(event.data)
+          // if there is id in the event.data set it as queryId and context
+          if (event.data.id) {
+            setCurrentQueryId(event.data.id)
+          }
+          break
+        case 'error':
+          setError(new Error(event.data.message))
+          break
+        default:
+          // Handle other events if necessary
+          break
+      }
+    },
+    [setCurrentQueryId],
+  )
 
   const executeSearch = useCallback(
     async (searchFunction, ...args) => {
       setIsLoading(true)
       setError(null)
       setData(null)
+      setCurrentQueryId(null)
       setStreamingSteps([])
 
       if (controllerRef.current) {
@@ -103,12 +114,24 @@ const usePanFinderApi = () => {
     }
   }, [])
 
+  const submitFeedback = useCallback(
+    async ({ statistic_id, feedback_type, doi }) => {
+      try {
+        return await submitFeedbackRequest({ statistic_id, feedback_type, doi })
+      } catch (error_) {
+        throw new Error(`Failed to submit feedback: ${error_.message}`)
+      }
+    },
+    [],
+  )
+
   const reset = useCallback(() => {
     setData(null)
     setError(null)
     setIsLoading(false)
     setStreamingSteps([])
-  }, [])
+    setCurrentQueryId(null)
+  }, [setCurrentQueryId])
 
   return {
     data,
@@ -119,6 +142,7 @@ const usePanFinderApi = () => {
     searchWithStructuredData,
     reset,
     fetchDocumentDetails,
+    submitFeedback,
   }
 }
 

@@ -100,3 +100,19 @@ export const fetchDocumentDetailsRequest = async (doi) => {
   )
   return response.json()
 }
+
+export const submitFeedbackRequest = async ({
+  statistic_id,
+  feedback_type,
+  doi,
+}) => {
+  if (!statistic_id || !feedback_type || !doi) {
+    throw new Error('statistic_id, feedback_type, and doi are required')
+  }
+  const response = await apiRequest(`${PAN_FINDER_API_BASE}/feedback/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': JSON_CONTENT_TYPE },
+    body: JSON.stringify({ statistic_id, feedback_type, doi }),
+  })
+  return response.json()
+}

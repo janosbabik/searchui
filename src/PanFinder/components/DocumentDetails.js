@@ -1,8 +1,44 @@
-import React from 'react'
-
+import React, { useState, useEffect } from 'react'
 import { Box, Flex, Text } from '../../Primitives'
+import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
+import { usePanFinderApi } from '../../Api/usePanFinderApi'
+import { useFeedback } from '../../Api/FeedbackContext'
 
 function DocumentDetails({ details, isLoading }) {
+  const { submitFeedback } = usePanFinderApi()
+  const { feedbacks, setFeedback, currentQueryId } = useFeedback()
+  const [feedbackStatus, setFeedbackStatus] = useState(null) // 'positive' | 'negative' | 'error' | null
+  const [feedbackLoading, setFeedbackLoading] = useState(false)
+
+  useEffect(() => {
+    if (details?.doi && currentQueryId && feedbacks) {
+      const stored = feedbacks[`${currentQueryId}|${details.doi}`]
+      if (stored === 'positive' || stored === 'negative') {
+        setFeedbackStatus(stored)
+      } else {
+        setFeedbackStatus(null)
+      }
+    }
+  }, [details?.doi, feedbacks, currentQueryId])
+
+  const handleFeedback = async (type) => {
+    if (!details?.doi || !currentQueryId) return
+    setFeedbackLoading(true)
+    setFeedbackStatus(null)
+    try {
+      await submitFeedback({
+        statistic_id: currentQueryId,
+        feedback_type: type,
+        doi: details.doi,
+      })
+      setFeedbackStatus(type)
+      setFeedback(currentQueryId, details.doi, type)
+    } catch (e) {
+      setFeedbackStatus('error')
+    } finally {
+      setFeedbackLoading(false)
+    }
+  }
   if (isLoading) {
     return (
       <tr>
@@ -50,8 +86,64 @@ function DocumentDetails({ details, isLoading }) {
 
   return (
     <tr>
-      <td colSpan="4" style={{ padding: 0, backgroundColor: '#1a202c' }}>
-        <Box sx={{ p: 4, borderTop: '1px solid #4a5568' }}>
+      <td
+        colSpan="4"
+        style={{ padding: 0, backgroundColor: '#1a202c', position: 'relative' }}
+      >
+        <Box
+          sx={{ p: 4, borderTop: '1px solid #4a5568', position: 'relative' }}
+        >
+          {/* Feedback icons top right */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 10,
+              right: 10,
+              zIndex: 2,
+            }}
+          >
+            <button
+              aria-label="Thumbs up"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: feedbackLoading ? 'not-allowed' : 'pointer',
+                color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
+                fontSize: 20,
+                opacity: feedbackLoading ? 0.5 : 1,
+              }}
+              disabled={feedbackLoading}
+              onClick={() => handleFeedback('positive')}
+            >
+              <FiThumbsUp />
+            </button>
+            <button
+              aria-label="Thumbs down"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: feedbackLoading ? 'not-allowed' : 'pointer',
+                color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
+                fontSize: 20,
+                opacity: feedbackLoading ? 0.5 : 1,
+              }}
+              disabled={feedbackLoading}
+              onClick={() => handleFeedback('negative')}
+            >
+              <FiThumbsDown />
+            </button>
+            {feedbackStatus === 'error' && (
+              <Text
+                sx={{
+                  color: '#e53e3e',
+                  fontSize: '12px',
+                  mt: 1,
+                }}
+              >
+                Error submitting feedback
+              </Text>
+            )}
+          </Box>
           <Box sx={{ display: 'grid', gap: 3 }}>
             {/* DOI */}
             <Box>

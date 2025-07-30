@@ -13,6 +13,7 @@ import Footer from './Footer'
 import GlobalStyles from './GlobalStyles'
 import Navigation from './Navigation'
 import ScrollToTop from './ScrollToTop'
+import { FeedbackProvider } from '../Api/FeedbackContext'
 
 function App() {
   const theme = useTheme()
@@ -37,7 +38,9 @@ function App() {
             </Route>
             <Route exact path="/pan-finder">
               <ScrollToTop />
-              <PanFinderPage />
+              <FeedbackProvider>
+                <PanFinderPage />
+              </FeedbackProvider>
             </Route>
             <Route exact path="/search">
               <ExplorePage isDesktop={isDesktop} />
