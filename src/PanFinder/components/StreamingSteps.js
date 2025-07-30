@@ -17,8 +17,7 @@ function StreamingSteps({ isLoading, streamingSteps, data }) {
         {streamingSteps.map((step, index) => {
           const isCompleted =
             index < streamingSteps.length - 1 ||
-            step.event === 'analysis_completed' ||
-            step.event === 'database_query_completed' ||
+            step.event === 'analysing_done' ||
             step.event === 'results' ||
             step.event === 'error'
 
@@ -75,9 +74,9 @@ function StreamingSteps({ isLoading, streamingSteps, data }) {
                   transition: 'color 0.15s ease',
                 }}
               >
-                {step.event === 'analysis_started' && 'Analysing your query...'}
-                {step.event === 'analysis_completed' && 'Analysis complete'}
-                {step.event === 'database_query_started' && 'Fetching data...'}
+                {step.event === 'analysing_query' && 'Analyzing query...'}
+                {step.event === 'analysing_done' && 'Analysis completed'}
+                {step.event === 'fetching_data' && 'Fetching data...'}
                 {step.event === 'error' && 'Error occurred'}
               </Text>
             </Flex>

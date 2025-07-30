@@ -65,14 +65,14 @@ export const searchRequest = async (query, onEvent, signal) => {
 }
 
 export const structuredSearchRequest = async (
+  id,
   structuredData,
-  originalQuery,
   onEvent,
   signal,
 ) => {
   const searchData = {
+    modified_query_id: id,
     structured_data: structuredData,
-    original_query: originalQuery || '',
   }
   const response = await apiRequest(
     `${PAN_FINDER_API_BASE}/search/structured`,

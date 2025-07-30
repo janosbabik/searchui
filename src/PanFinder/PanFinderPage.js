@@ -65,8 +65,8 @@ function PanFinderPage() {
     }
   }
 
-  const handleStructuredSearch = (structuredData, originalQuery) => {
-    searchWithStructuredData(structuredData, originalQuery)
+  const handleStructuredSearch = (id, structuredData) => {
+    searchWithStructuredData(id, structuredData)
   }
 
   function handleSubmit(evt) {

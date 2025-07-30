@@ -8,7 +8,7 @@ function QueryDetails({ data, onStructuredSearch }) {
   const [editedData, setEditedData] = useState('')
   const [error, setError] = useState(null)
 
-  if (!data) {
+  if (!data || !data.raw_structured_data || !data.id) {
     return null
   }
 
@@ -20,7 +20,7 @@ function QueryDetails({ data, onStructuredSearch }) {
   const handleSearch = () => {
     try {
       const parsedData = JSON.parse(editedData)
-      onStructuredSearch(parsedData, data.original_query)
+      onStructuredSearch(data.id, parsedData)
       setIsEditing(false)
     } catch (error) {
       setError(error.message || 'Please enter valid JSON data.')
@@ -66,35 +66,6 @@ function QueryDetails({ data, onStructuredSearch }) {
             p: 3,
           }}
         >
-          <Box sx={{ mb: 3 }}>
-            <Text
-              sx={{
-                mb: 2,
-                fontSize: '12px',
-                fontWeight: '500',
-                color: '#718096',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
-              Original Query
-            </Text>
-            <Box
-              sx={{
-                bg: '#111827',
-                p: 2,
-                borderRadius: '4px',
-                border: '1px solid #374151',
-                fontFamily: 'monospace',
-                fontSize: '13px',
-                lineHeight: 1.5,
-                color: '#d1d5db',
-                wordBreak: 'break-word',
-              }}
-            >
-              {data.original_query || 'No query available'}
-            </Box>
-          </Box>
           {data.raw_structured_data && (
             <Box>
               <Flex

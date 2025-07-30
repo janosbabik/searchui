@@ -11,7 +11,6 @@ const usePanFinderApi = () => {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [streamingSteps, setStreamingSteps] = useState([])
-  const [lastQuery, setLastQuery] = useState('')
   const controllerRef = useRef(null)
   const isMounted = useRef(true)
 
@@ -78,24 +77,22 @@ const usePanFinderApi = () => {
         return
       }
 
-      setLastQuery(query.trim())
       await executeSearch(searchRequest, query)
     },
     [executeSearch],
   )
 
   const searchWithStructuredData = useCallback(
-    async (structuredData, originalQuery) => {
+    async (id, structuredData) => {
       if (!structuredData || typeof structuredData !== 'object') {
         setError(new Error('Structured data is required and must be an object'))
         setIsLoading(false)
         return
       }
 
-      const queryToUse = originalQuery || lastQuery || ''
-      await executeSearch(structuredSearchRequest, structuredData, queryToUse)
+      await executeSearch(structuredSearchRequest, id, structuredData)
     },
-    [executeSearch, lastQuery],
+    [executeSearch],
   )
 
   const fetchDocumentDetails = useCallback(async (doi) => {
