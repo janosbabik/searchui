@@ -1,8 +1,125 @@
-import React, { useState, useEffect } from 'react'
-import { Box, Flex, Text } from '../../Primitives'
+import { useState, useEffect } from 'react'
 import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
-import { usePanFinderApi } from '../../Api/usePanFinderApi'
+
 import { useFeedback } from '../../Api/FeedbackContext'
+import { usePanFinderApi } from '../../Api/usePanFinderApi'
+import { Flex, Box, Text } from '../../Primitives'
+
+function LoadingRow() {
+  return (
+    <tr>
+      <td colSpan="4" style={{ padding: '16px', textAlign: 'center' }}>
+        <Flex sx={{ alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          <Box
+            sx={{
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              border: '2px solid transparent',
+              borderTop: '2px solid #48bb78',
+              borderRight: '2px solid #48bb78',
+              backgroundColor: 'transparent',
+              flexShrink: 0,
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+          <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
+            Loading document details...
+          </Text>
+        </Flex>
+      </td>
+    </tr>
+  )
+}
+
+function ErrorRow({ error }) {
+  return (
+    <tr>
+      <td colSpan="4" style={{ padding: '16px' }}>
+        <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
+          <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>
+            Error loading details: {error}
+          </Text>
+        </Box>
+      </td>
+    </tr>
+  )
+}
+
+function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 2,
+      }}
+    >
+      <button
+        type="button"
+        aria-label="Thumbs up"
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: feedbackLoading ? 'not-allowed' : 'pointer',
+          color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
+          fontSize: 20,
+          opacity: feedbackLoading ? 0.5 : 1,
+        }}
+        disabled={feedbackLoading}
+        onClick={() => handleFeedback('positive')}
+      >
+        <FiThumbsUp />
+      </button>
+      <button
+        type="button"
+        aria-label="Thumbs down"
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: feedbackLoading ? 'not-allowed' : 'pointer',
+          color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
+          fontSize: 20,
+          opacity: feedbackLoading ? 0.5 : 1,
+        }}
+        disabled={feedbackLoading}
+        onClick={() => handleFeedback('negative')}
+      >
+        <FiThumbsDown />
+      </button>
+      {feedbackStatus === 'error' && (
+        <Text
+          sx={{
+            color: '#e53e3e',
+            fontSize: '12px',
+            mt: 1,
+          }}
+        >
+          Error submitting feedback
+        </Text>
+      )}
+    </Box>
+  )
+}
+
+function DocumentField({ label, children }) {
+  return (
+    <Box>
+      <Text
+        sx={{
+          fontSize: '12px',
+          fontWeight: 'bold',
+          color: '#a0aec0',
+          mb: 1,
+        }}
+      >
+        {label}
+      </Text>
+      {children}
+    </Box>
+  )
+}
 
 function DocumentDetails({ details, isLoading }) {
   const { submitFeedback } = usePanFinderApi()
@@ -22,7 +139,9 @@ function DocumentDetails({ details, isLoading }) {
   }, [details?.doi, feedbacks, currentQueryId])
 
   const handleFeedback = async (type) => {
-    if (!details?.doi || !currentQueryId) return
+    if (!details?.doi || !currentQueryId) {
+      return
+    }
     setFeedbackLoading(true)
     setFeedbackStatus(null)
     try {
@@ -33,53 +152,19 @@ function DocumentDetails({ details, isLoading }) {
       })
       setFeedbackStatus(type)
       setFeedback(currentQueryId, details.doi, type)
-    } catch (e) {
+    } catch {
       setFeedbackStatus('error')
     } finally {
       setFeedbackLoading(false)
     }
   }
+
   if (isLoading) {
-    return (
-      <tr>
-        <td colSpan="4" style={{ padding: '16px', textAlign: 'center' }}>
-          <Flex sx={{ alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-            <Box
-              sx={{
-                width: '18px',
-                height: '18px',
-                borderRadius: '50%',
-                border: '2px solid transparent',
-                borderTop: '2px solid #48bb78',
-                borderRight: '2px solid #48bb78',
-                backgroundColor: 'transparent',
-                flexShrink: 0,
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
-              Loading document details...
-            </Text>
-          </Flex>
-        </td>
-      </tr>
-    )
+    return <LoadingRow />
   }
-
   if (details?.error) {
-    return (
-      <tr>
-        <td colSpan="4" style={{ padding: '16px' }}>
-          <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
-            <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>
-              Error loading details: {details.error}
-            </Text>
-          </Box>
-        </td>
-      </tr>
-    )
+    return <ErrorRow error={details.error} />
   }
-
   if (!details) {
     return null
   }
@@ -93,70 +178,13 @@ function DocumentDetails({ details, isLoading }) {
         <Box
           sx={{ p: 4, borderTop: '1px solid #4a5568', position: 'relative' }}
         >
-          {/* Feedback icons top right */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 10,
-              right: 10,
-              zIndex: 2,
-            }}
-          >
-            <button
-              aria-label="Thumbs up"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: feedbackLoading ? 'not-allowed' : 'pointer',
-                color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
-                fontSize: 20,
-                opacity: feedbackLoading ? 0.5 : 1,
-              }}
-              disabled={feedbackLoading}
-              onClick={() => handleFeedback('positive')}
-            >
-              <FiThumbsUp />
-            </button>
-            <button
-              aria-label="Thumbs down"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: feedbackLoading ? 'not-allowed' : 'pointer',
-                color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
-                fontSize: 20,
-                opacity: feedbackLoading ? 0.5 : 1,
-              }}
-              disabled={feedbackLoading}
-              onClick={() => handleFeedback('negative')}
-            >
-              <FiThumbsDown />
-            </button>
-            {feedbackStatus === 'error' && (
-              <Text
-                sx={{
-                  color: '#e53e3e',
-                  fontSize: '12px',
-                  mt: 1,
-                }}
-              >
-                Error submitting feedback
-              </Text>
-            )}
-          </Box>
+          <FeedbackButtons
+            feedbackLoading={feedbackLoading}
+            feedbackStatus={feedbackStatus}
+            handleFeedback={handleFeedback}
+          />
           <Box sx={{ display: 'grid', gap: 3 }}>
-            {/* DOI */}
-            <Box>
-              <Text
-                sx={{
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  color: '#a0aec0',
-                  mb: 1,
-                }}
-              >
-                DOI
-              </Text>
+            <DocumentField label="DOI">
               <Text
                 sx={{
                   fontSize: '13px',
@@ -188,20 +216,9 @@ function DocumentDetails({ details, isLoading }) {
                   {details.doi}
                 </a>
               </Text>
-            </Box>
+            </DocumentField>
 
-            {/* Title */}
-            <Box>
-              <Text
-                sx={{
-                  fontSize: '12px',
-                  fontWeight: 'bold',
-                  color: '#a0aec0',
-                  mb: 1,
-                }}
-              >
-                Title
-              </Text>
+            <DocumentField label="Title">
               <Text
                 sx={{
                   fontSize: '13px',
@@ -212,40 +229,18 @@ function DocumentDetails({ details, isLoading }) {
               >
                 {details.title}
               </Text>
-            </Box>
+            </DocumentField>
 
-            {/* Facility */}
             {details.facility_name && (
-              <Box>
-                <Text
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: '#a0aec0',
-                    mb: 1,
-                  }}
-                >
-                  Facility
-                </Text>
+              <DocumentField label="Facility">
                 <Text sx={{ fontSize: '13px', color: '#e2e8f0' }}>
                   {details.facility_name}
                 </Text>
-              </Box>
+              </DocumentField>
             )}
 
-            {/* Summary */}
             {details.summary && (
-              <Box>
-                <Text
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: '#a0aec0',
-                    mb: 1,
-                  }}
-                >
-                  Summary
-                </Text>
+              <DocumentField label="Summary">
                 <Box
                   sx={{
                     bg: '#2d3748',
@@ -262,22 +257,11 @@ function DocumentDetails({ details, isLoading }) {
                     {details.summary}
                   </Text>
                 </Box>
-              </Box>
+              </DocumentField>
             )}
 
-            {/* Text Content */}
             {details.text && (
-              <Box>
-                <Text
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: '#a0aec0',
-                    mb: 1,
-                  }}
-                >
-                  Content
-                </Text>
+              <DocumentField label="Content">
                 <Box
                   sx={{
                     bg: '#2d3748',
@@ -296,22 +280,11 @@ function DocumentDetails({ details, isLoading }) {
                       : details.text}
                   </Text>
                 </Box>
-              </Box>
+              </DocumentField>
             )}
 
-            {/* Raw Data */}
             {details.raw && (
-              <Box>
-                <Text
-                  sx={{
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    color: '#a0aec0',
-                    mb: 1,
-                  }}
-                >
-                  Raw Data
-                </Text>
+              <DocumentField label="Raw Data">
                 <Box
                   sx={{
                     bg: '#111827',
@@ -337,7 +310,7 @@ function DocumentDetails({ details, isLoading }) {
                       : details.raw}
                   </pre>
                 </Box>
-              </Box>
+              </DocumentField>
             )}
           </Box>
         </Box>

@@ -77,7 +77,7 @@ const usePanFinderApi = () => {
         }
       }
     },
-    [handleEvent],
+    [handleEvent, setCurrentQueryId],
   )
 
   const search = useCallback(

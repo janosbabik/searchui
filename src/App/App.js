@@ -3,6 +3,7 @@ import React from 'react'
 import { Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
+import { FeedbackProvider } from '../Api/FeedbackContext'
 import ExplorePage from '../Explore/ExplorePage'
 import HomePage from '../Home/HomePage'
 import PanFinderPage from '../PanFinder/PanFinderPage'
@@ -13,7 +14,6 @@ import Footer from './Footer'
 import GlobalStyles from './GlobalStyles'
 import Navigation from './Navigation'
 import ScrollToTop from './ScrollToTop'
-import { FeedbackProvider } from '../Api/FeedbackContext'
 
 function App() {
   const theme = useTheme()
