@@ -52,8 +52,13 @@ const processStream = async (reader, onEvent) => {
   }
 }
 
-export const searchRequest = async (query, onEvent, signal) => {
-  const searchData = { query: query.trim() }
+export const searchRequest = async (
+  query,
+  turnstile_token,
+  onEvent,
+  signal,
+) => {
+  const searchData = { query, turnstile_token }
   const response = await apiRequest(`${PAN_FINDER_API_BASE}/search`, {
     method: 'POST',
     headers: { 'Content-Type': JSON_CONTENT_TYPE },

@@ -2,8 +2,8 @@ import React from 'react'
 
 import { Box, Heading, Text } from '../../Primitives'
 
-function ErrorDisplay({ error, isLoading }) {
-  if (!error || isLoading) {
+function ErrorDisplay({ error }) {
+  if (!error) {
     return null
   }
 

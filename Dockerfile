@@ -7,6 +7,10 @@ ENV REACT_APP_API=$API
 ARG PAN_FINDER_API
 ENV REACT_APP_PAN_FINDER_API=$PAN_FINDER_API
 
+# Turnstile site key (not sensitive, can be public)
+ARG TURNSTILE_SITE_KEY
+ENV REACT_APP_TURNSTILE_SITE_KEY=$TURNSTILE_SITE_KEY
+
 COPY package.json ./
 COPY yarn.lock ./
 RUN yarn install

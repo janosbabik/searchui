@@ -69,6 +69,7 @@ function SearchForm({
           {exampleQueries.map((query) => (
             <Button
               key={query}
+              disabled={isLoading}
               onClick={() => setInputValue(query)}
               variant="outline"
               sx={{
@@ -85,6 +86,10 @@ function SearchForm({
                 '&:hover': {
                   bg: '#4a5568',
                   transform: 'translateY(-1px)',
+                },
+                '&:disabled': {
+                  opacity: 0.6,
+                  cursor: 'not-allowed',
                 },
               }}
             >

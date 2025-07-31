@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import { usePanFinderApi } from '../Api/usePanFinderApi'
 import { Box } from '../Primitives'
@@ -8,21 +8,53 @@ import QueryDetails from './components/QueryDetails'
 import ResultsDisplay from './components/ResultsDisplay'
 import SearchForm from './components/SearchForm'
 import StreamingSteps from './components/StreamingSteps'
+import { useTurnstile } from './hooks/useTurnstile'
+
+const TURNSTILE_SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY
 
 function PanFinderPage() {
   const [inputValue, setInputValue] = useState('')
   const [expandedRows, setExpandedRows] = useState(new Set())
   const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
+  const [pendingSearch, setPendingSearch] = useState(false)
+  const [turnstileError, setTurnstileError] = useState(null)
+  const [token, setToken] = useState(null)
+  const tokenRef = useRef(token)
   const {
     data,
     error,
     isLoading,
     streamingSteps,
+    setStreamingSteps,
     search,
     searchWithStructuredData,
     fetchDocumentDetails,
   } = usePanFinderApi()
+  const turnstile = useTurnstile()
+  const turnstileRef = useRef(null)
+
+  // Keep tokenRef in sync with token state
+  useEffect(() => {
+    tokenRef.current = token
+  }, [token])
+
+  // Render the invisible widget once the script is loaded
+  useEffect(() => {
+    if (turnstile && turnstileRef.current) {
+      turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        size: 'invisible',
+        'error-callback': (error) => {
+          setTurnstileError(error)
+          setToken(null) // Reset token on error
+        },
+      })
+      turnstile.execute(turnstileRef.current, {
+        callback: (token) => setToken(token),
+      })
+    }
+  }, [turnstile])
 
   const handleRowExpand = async (doi) => {
     const newExpandedRows = new Set(expandedRows)
@@ -59,9 +91,33 @@ function PanFinderPage() {
     }
   }
 
-  const handleSearch = () => {
-    if (inputValue.trim()) {
-      search(inputValue.trim())
+  const handleSearch = async () => {
+    if (pendingSearch || !inputValue.trim()) {
+      return // Prevent multiple requests if already pending
+    }
+
+    setPendingSearch(true)
+
+    if (!tokenRef.current) {
+      setStreamingSteps((prev) => [...prev, { event: 'waiting_turnstile' }])
+      await new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (tokenRef.current) {
+            clearInterval(interval)
+            resolve()
+          }
+        }, 200)
+      })
+    }
+
+    try {
+      await search(inputValue, tokenRef.current)
+    } finally {
+      setToken(null) // Reset token after search
+      if (turnstileRef.current) {
+        turnstile.reset(turnstileRef.current) // Reset Turnstile widget
+      }
+      setPendingSearch(false)
     }
   }
 
@@ -87,21 +143,20 @@ function PanFinderPage() {
 
   return (
     <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
+      {/* Cloudflare Turnstile invisible widget */}
+      <div ref={turnstileRef} id="turnstile-widget" />
+
       <PageHeader />
       <SearchForm
         inputValue={inputValue}
         handleInputChange={handleInputChange}
         handleKeyDown={handleKeyDown}
         handleSubmit={handleSubmit}
-        isLoading={isLoading}
+        isLoading={isLoading || pendingSearch}
         setInputValue={setInputValue}
       />
-      <StreamingSteps
-        isLoading={isLoading}
-        streamingSteps={streamingSteps}
-        data={data}
-      />
-      <ErrorDisplay error={error} isLoading={isLoading} />
+      <StreamingSteps streamingSteps={streamingSteps} />
+      <ErrorDisplay error={error || turnstileError} />
       <ResultsDisplay
         data={data}
         expandedRows={expandedRows}

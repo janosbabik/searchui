@@ -70,6 +70,7 @@ const usePanFinderApi = () => {
         }
       } finally {
         if (isMounted.current) {
+          setStreamingSteps([])
           setIsLoading(false)
         }
         if (controllerRef.current === controller) {
@@ -81,14 +82,14 @@ const usePanFinderApi = () => {
   )
 
   const search = useCallback(
-    async (query) => {
+    async (query, turnstileToken) => {
       if (!query || typeof query !== 'string' || query.trim() === '') {
         setError(new Error('Query is required and must be a non-empty string'))
         setIsLoading(false)
         return
       }
 
-      await executeSearch(searchRequest, query)
+      await executeSearch(searchRequest, query, turnstileToken)
     },
     [executeSearch],
   )
@@ -138,6 +139,7 @@ const usePanFinderApi = () => {
     error,
     isLoading,
     streamingSteps,
+    setStreamingSteps,
     search,
     searchWithStructuredData,
     reset,

@@ -2,8 +2,8 @@ import React from 'react'
 
 import { Box, Flex, Text } from '../../Primitives'
 
-function StreamingSteps({ isLoading, streamingSteps, data }) {
-  if ((!isLoading && streamingSteps.length === 0) || data) {
+function StreamingSteps({ streamingSteps }) {
+  if (streamingSteps.length === 0) {
     return null
   }
 
@@ -74,6 +74,8 @@ function StreamingSteps({ isLoading, streamingSteps, data }) {
                   transition: 'color 0.15s ease',
                 }}
               >
+                {step.event === 'waiting_turnstile' &&
+                  'Waiting for security verification...'}
                 {step.event === 'analysing_query' && 'Analyzing query...'}
                 {step.event === 'analysing_done' && 'Analysis completed'}
                 {step.event === 'fetching_data' && 'Fetching data...'}
@@ -82,40 +84,6 @@ function StreamingSteps({ isLoading, streamingSteps, data }) {
             </Flex>
           )
         })}
-        {isLoading && streamingSteps.length === 0 && (
-          <Flex
-            sx={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 2,
-              opacity: 0,
-              animation: 'fadeIn 0.2s ease-out forwards',
-            }}
-          >
-            <Box
-              sx={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                border: '2px solid transparent',
-                borderTop: '2px solid #48bb78',
-                borderRight: '2px solid #48bb78',
-                backgroundColor: 'transparent',
-                flexShrink: 0,
-                animation: 'spin 1s linear infinite',
-              }}
-            />
-            <Text
-              sx={{
-                fontSize: 1,
-                color: '#a0aec0',
-                fontFamily: 'monospace',
-              }}
-            >
-              Connecting to server...
-            </Text>
-          </Flex>
-        )}
       </Box>
     </Box>
   )
