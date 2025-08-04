@@ -17,7 +17,7 @@ function PanFinderPage() {
   const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
   const [pendingSearch, setPendingSearch] = useState(false)
-  const { sessionId } = useSession()
+  const { sessionId, error: sessionError } = useSession()
 
   const {
     data,
@@ -117,7 +117,7 @@ function PanFinderPage() {
         />
 
         <StreamingSteps streamingSteps={streamingSteps} />
-        <ErrorDisplay error={error} />
+        <ErrorDisplay error={error || sessionError} />
         <ResultsDisplay
           data={data}
           expandedRows={expandedRows}

@@ -23,6 +23,7 @@ const SessionContext = createContext({
 export function SessionProvider({ children }) {
   const [sessionId, setSessionId] = useState(null)
   const [sessionCreating, setSessionCreating] = useState(false)
+  const [error, setError] = useState(null)
   const sessionIdRef = useRef(sessionId)
 
   // Keep ref in sync with state
@@ -32,16 +33,35 @@ export function SessionProvider({ children }) {
 
   const createSession = useCallback(
     async (createSessionFn, token) => {
-      if (token && !sessionId && !sessionCreating) {
-        setSessionCreating(true)
+      if (!token || typeof token !== 'string') {
+        const error = new Error('Valid Turnstile token is required')
+        setError(error)
+        throw error
+      }
 
-        try {
-          const response = await createSessionFn(token)
-          setSessionId(response.session_id)
-          return response
-        } finally {
-          setSessionCreating(false)
+      if (sessionId) {
+        return { session_id: sessionId } // Already have valid session
+      }
+
+      if (sessionCreating) {
+        return // Already creating session
+      }
+
+      setSessionCreating(true)
+      setError(null)
+
+      try {
+        const response = await createSessionFn(token)
+        if (!response?.session_id) {
+          throw new Error('Invalid session response from server')
         }
+        setSessionId(response.session_id)
+        return response
+      } catch (error) {
+        setError(error)
+        throw error
+      } finally {
+        setSessionCreating(false)
       }
     },
     [sessionId, sessionCreating],
@@ -49,6 +69,7 @@ export function SessionProvider({ children }) {
 
   const invalidateSession = useCallback(() => {
     setSessionId(null)
+    setError(null)
     sessionIdRef.current = null
   }, [])
 
@@ -59,6 +80,7 @@ export function SessionProvider({ children }) {
   const contextValue = {
     sessionId,
     sessionCreating,
+    error,
     setSessionId,
     createSession,
     invalidateSession,

@@ -9,7 +9,8 @@ const TURNSTILE_SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY
 function TurnstileSessionGate({ children, createSessionApi }) {
   const [token, setToken] = useState(null)
   const [widgetRendered, setWidgetRendered] = useState(false)
-  const { sessionId, sessionCreating, createSession } = useSession()
+  const [isCreatingSession, setIsCreatingSession] = useState(false)
+  const { sessionId, sessionCreating, error: sessionError } = useSession()
   const {
     turnstile,
     isLoading: turnstileLoading,
@@ -19,17 +20,22 @@ function TurnstileSessionGate({ children, createSessionApi }) {
     removeWidget,
   } = useTurnstile()
   const turnstileRef = useRef(null)
+  const widgetIdRef = useRef(null)
 
   // Handle Turnstile token and create session
   useEffect(() => {
     const handleSessionCreation = async () => {
-      if (token && !sessionId && !sessionCreating) {
-        resetTurnstile()
+      if (token && !sessionId && !sessionCreating && !isCreatingSession) {
+        setIsCreatingSession(true)
 
         try {
-          await createSession(createSessionApi, token)
+          await createSessionApi(token)
+          setToken(null) // Clear token after successful session creation
+        } catch {
+          resetTurnstile()
+          setToken(null)
         } finally {
-          setToken(null) // Clear token after creating session
+          setIsCreatingSession(false)
         }
       }
     }
@@ -39,7 +45,7 @@ function TurnstileSessionGate({ children, createSessionApi }) {
     token,
     sessionId,
     sessionCreating,
-    createSession,
+    isCreatingSession,
     createSessionApi,
     resetTurnstile,
   ])
@@ -54,28 +60,54 @@ function TurnstileSessionGate({ children, createSessionApi }) {
       !widgetRendered
     ) {
       // Clear any existing widget first
+      if (widgetIdRef.current) {
+        removeWidget(widgetIdRef.current)
+      }
+
       turnstileRef.current.innerHTML = ''
 
       // Render new widget
-      turnstile.render(turnstileRef.current, {
+      const widgetId = turnstile.render(turnstileRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
         callback: (token) => setToken(token),
         'error-callback': (error) => {
           setToken(null) // Reset token on error
+          resetTurnstile()
         },
       })
+      widgetIdRef.current = widgetId
       setWidgetRendered(true)
     }
 
     if (sessionId && widgetRendered) {
       // Clean up widget when session is active
+      if (widgetIdRef.current) {
+        removeWidget(widgetIdRef.current)
+        widgetIdRef.current = null
+      }
+
       if (turnstileRef.current) {
-        removeWidget('turnstile-widget')
         turnstileRef.current.innerHTML = ''
       }
       setWidgetRendered(false)
     }
-  }, [turnstile, sessionId, scriptLoaded, widgetRendered, removeWidget])
+  }, [
+    turnstile,
+    sessionId,
+    scriptLoaded,
+    widgetRendered,
+    removeWidget,
+    resetTurnstile,
+  ])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (widgetIdRef.current) {
+        removeWidget(widgetIdRef.current)
+      }
+    }
+  }, [removeWidget])
 
   return (
     <Box sx={{ position: 'relative' }}>
@@ -139,7 +171,7 @@ function TurnstileSessionGate({ children, createSessionApi }) {
               >
                 Loading security challenge...
               </Box>
-            ) : turnstileError ? (
+            ) : turnstileError || sessionError ? (
               <Box
                 sx={{
                   mt: 2,
@@ -148,14 +180,14 @@ function TurnstileSessionGate({ children, createSessionApi }) {
                   textAlign: 'center',
                 }}
               >
-                {turnstileError.message ||
+                {(turnstileError || sessionError)?.message ||
                   'Failed to load security challenge. Please refresh the page.'}
               </Box>
             ) : (
               <div ref={turnstileRef} id="turnstile-widget" />
             )}
 
-            {sessionCreating && (
+            {(sessionCreating || isCreatingSession) && (
               <Box
                 sx={{
                   mt: 2,

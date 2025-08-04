@@ -37,7 +37,7 @@ const usePanFinderApi = () => {
 
   const getValidSessionId = useCallback(() => {
     const sessionId = getSessionId()
-    if (!sessionId || typeof sessionId !== 'string') {
+    if (!sessionId) {
       setError(new Error(SESSION_ID_REQUIRED_MSG))
       return null
     }
@@ -126,8 +126,15 @@ const usePanFinderApi = () => {
 
   const createSession = useCallback(
     async (turnstileToken) => {
+      if (!turnstileToken || typeof turnstileToken !== 'string') {
+        const error = new Error('Valid Turnstile token is required')
+        setError(error)
+        throw error
+      }
+
       setIsLoading(true)
       setError(null)
+
       try {
         return await createSessionFromContext(
           createSessionRequest,
