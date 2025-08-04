@@ -19,6 +19,8 @@ function StreamingSteps({ streamingSteps }) {
             index < streamingSteps.length - 1 ||
             step.event === 'analysing_done' ||
             step.event === 'results' ||
+            step.event === 'explanation_complete' ||
+            step.event === 'explanation_error' ||
             step.event === 'error'
 
           return (
@@ -76,6 +78,11 @@ function StreamingSteps({ streamingSteps }) {
               >
                 {step.event === 'waiting_turnstile' &&
                   'Waiting for security verification...'}
+                {step.event === 'generating_explanation' &&
+                  'Generating explanation...'}
+                {step.event === 'explanation_complete' &&
+                  'Explanation completed'}
+                {step.event === 'explanation_error' && 'Explanation failed'}
                 {step.event === 'analysing_query' && 'Analyzing query...'}
                 {step.event === 'analysing_done' && 'Analysis completed'}
                 {step.event === 'fetching_data' && 'Fetching data...'}

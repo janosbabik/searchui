@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 
 import { Box } from '../Primitives'
 import ErrorDisplay from './components/ErrorDisplay'
+import ExplanationDisplay from './components/ExplanationDisplay'
 import PageHeader from './components/PageHeader'
 import QueryDetails from './components/QueryDetails'
 import ResultsDisplay from './components/ResultsDisplay'
@@ -24,6 +25,9 @@ function PanFinderPage() {
     error,
     isLoading,
     streamingSteps,
+    explanation,
+    isExplanationComplete,
+    explanationError,
     search,
     searchWithStructuredData,
     fetchDocumentDetails,
@@ -118,6 +122,12 @@ function PanFinderPage() {
 
         <StreamingSteps streamingSteps={streamingSteps} />
         <ErrorDisplay error={error || sessionError} />
+        <ExplanationDisplay
+          explanation={explanation}
+          isExplanationComplete={isExplanationComplete}
+          explanationError={explanationError}
+          isVisible={!!data}
+        />
         <ResultsDisplay
           data={data}
           expandedRows={expandedRows}

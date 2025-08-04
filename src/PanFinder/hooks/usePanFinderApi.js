@@ -20,6 +20,9 @@ const usePanFinderApi = () => {
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [streamingSteps, setStreamingSteps] = useState([])
+  const [explanation, setExplanation] = useState('')
+  const [isExplanationComplete, setIsExplanationComplete] = useState(false)
+  const [explanationError, setExplanationError] = useState(null)
   const { setCurrentQueryId } = useFeedback()
   const {
     getSessionId,
@@ -46,7 +49,9 @@ const usePanFinderApi = () => {
 
   const handleEvent = useCallback(
     (event) => {
-      setStreamingSteps((prev) => [...prev, event])
+      if (!['results', 'explanation_chunk'].includes(event.event)) {
+        setStreamingSteps((prev) => [...prev, event])
+      }
       switch (event.event) {
         case 'results':
           setData(event.data)
@@ -54,6 +59,27 @@ const usePanFinderApi = () => {
           if (event.data.id) {
             setCurrentQueryId(event.data.id)
           }
+          break
+        case 'generating_explanation':
+          // Reset explanation state when starting
+          setExplanation('')
+          setIsExplanationComplete(false)
+          setExplanationError(null)
+          break
+        case 'explanation_chunk':
+          // Append new content to explanation
+          if (event.data?.content) {
+            setExplanation((prev) => prev + event.data.content)
+          }
+          break
+        case 'explanation_complete':
+          setIsExplanationComplete(true)
+          break
+        case 'explanation_error':
+          setExplanationError(
+            event.data?.message || 'Failed to generate explanation',
+          )
+          setIsExplanationComplete(true)
           break
         case 'error':
           setError(new Error(event.data.message))
@@ -73,6 +99,9 @@ const usePanFinderApi = () => {
       setData(null)
       setCurrentQueryId(null)
       setStreamingSteps([])
+      setExplanation('')
+      setIsExplanationComplete(false)
+      setExplanationError(null)
 
       if (controllerRef.current) {
         controllerRef.current.abort()
@@ -200,6 +229,9 @@ const usePanFinderApi = () => {
     setIsLoading(false)
     setStreamingSteps([])
     setCurrentQueryId(null)
+    setExplanation('')
+    setIsExplanationComplete(false)
+    setExplanationError(null)
   }, [setCurrentQueryId])
 
   return {
@@ -207,6 +239,9 @@ const usePanFinderApi = () => {
     error,
     isLoading,
     streamingSteps,
+    explanation,
+    isExplanationComplete,
+    explanationError,
     search,
     searchWithStructuredData,
     reset,
