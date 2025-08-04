@@ -3,10 +3,11 @@ import React from 'react'
 import { Route, Switch } from 'react-router-dom'
 import { ThemeProvider } from 'styled-components'
 
-import { FeedbackProvider } from '../Api/FeedbackContext'
 import ExplorePage from '../Explore/ExplorePage'
 import HomePage from '../Home/HomePage'
 import PanFinderPage from '../PanFinder/PanFinderPage'
+import { FeedbackProvider } from '../PanFinder/contexts/FeedbackContext'
+import { SessionProvider } from '../PanFinder/contexts/SessionContext'
 import { Box, Flex } from '../Primitives'
 import { breakpoints } from '../breakpoints'
 import { useTheme } from '../theme'
@@ -38,9 +39,11 @@ function App() {
             </Route>
             <Route exact path="/pan-finder">
               <ScrollToTop />
-              <FeedbackProvider>
-                <PanFinderPage />
-              </FeedbackProvider>
+              <SessionProvider>
+                <FeedbackProvider>
+                  <PanFinderPage />
+                </FeedbackProvider>
+              </SessionProvider>
             </Route>
             <Route exact path="/search">
               <ExplorePage isDesktop={isDesktop} />

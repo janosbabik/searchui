@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 
-import { usePanFinderApi } from '../Api/usePanFinderApi'
+import { usePanFinderApi } from './hooks/usePanFinderApi'
 import { Box } from '../Primitives'
 import ErrorDisplay from './components/ErrorDisplay'
 import PageHeader from './components/PageHeader'

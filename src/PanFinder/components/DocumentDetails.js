@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
 
-import { useFeedback } from '../../Api/FeedbackContext'
-import { usePanFinderApi } from '../../Api/usePanFinderApi'
+import { useFeedback } from '../contexts/FeedbackContext'
+import { usePanFinderApi } from '../hooks/usePanFinderApi'
 import { Flex, Box, Text } from '../../Primitives'
 
 function LoadingRow() {

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-import { useFeedback } from './FeedbackContext'
+import { useFeedback } from '../contexts/FeedbackContext'
 import {
   searchRequest,
   structuredSearchRequest,
