@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
-import { usePanFinderApi } from './hooks/usePanFinderApi'
 import { Box } from '../Primitives'
 import ErrorDisplay from './components/ErrorDisplay'
 import PageHeader from './components/PageHeader'
@@ -8,6 +7,8 @@ import QueryDetails from './components/QueryDetails'
 import ResultsDisplay from './components/ResultsDisplay'
 import SearchForm from './components/SearchForm'
 import StreamingSteps from './components/StreamingSteps'
+import { useSession } from './contexts/SessionContext'
+import { usePanFinderApi } from './hooks/usePanFinderApi'
 import { useTurnstile } from './hooks/useTurnstile'
 
 const TURNSTILE_SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY
@@ -19,10 +20,8 @@ function PanFinderPage() {
   const [loadingDetails, setLoadingDetails] = useState(new Set())
   const [pendingSearch, setPendingSearch] = useState(false)
   const [token, setToken] = useState(null)
-  const [sessionId, setSessionId] = useState(null)
-  const [sessionCreating, setSessionCreating] = useState(false)
   const [widgetRendered, setWidgetRendered] = useState(false)
-  const sessionIdRef = useRef(sessionId)
+  const { sessionId, sessionCreating, createSession } = useSession()
   const {
     turnstile,
     isLoading: turnstileLoading,
@@ -33,13 +32,6 @@ function PanFinderPage() {
   } = useTurnstile()
   const turnstileRef = useRef(null)
 
-  // Handle session invalidation
-  const handleSessionInvalid = useCallback(() => {
-    setSessionId(null)
-    resetTurnstile()
-    // Widget will be re-rendered when sessionId becomes null
-  }, [resetTurnstile])
-
   const {
     data,
     error,
@@ -48,34 +40,32 @@ function PanFinderPage() {
     search,
     searchWithStructuredData,
     fetchDocumentDetails,
-    createSession,
-  } = usePanFinderApi(handleSessionInvalid)
-
-  useEffect(() => {
-    sessionIdRef.current = sessionId
-  }, [sessionId])
+    createSession: createSessionApi,
+  } = usePanFinderApi()
 
   // Handle Turnstile token and create session
   useEffect(() => {
     const handleSessionCreation = async () => {
       if (token && !sessionId && !sessionCreating) {
-        setSessionCreating(true)
         resetTurnstile()
 
         try {
-          const response = await createSession(token)
-          setSessionId(response.session_id)
-          setToken(null) // Clear token after creating session
-        } catch {
-          setToken(null)
+          await createSession(createSessionApi, token)
         } finally {
-          setSessionCreating(false)
+          setToken(null) // Clear token after creating session
         }
       }
     }
 
     handleSessionCreation()
-  }, [token, sessionId, sessionCreating, createSession, resetTurnstile])
+  }, [
+    token,
+    sessionId,
+    sessionCreating,
+    createSession,
+    createSessionApi,
+    resetTurnstile,
+  ])
 
   // Render the managed widget once the script is loaded and when session is invalid
   useEffect(() => {
@@ -150,24 +140,17 @@ function PanFinderPage() {
       return // Prevent multiple requests if already pending
     }
 
-    // Check if we have a valid session
-    if (!sessionIdRef.current) {
-      return
-    }
-
     setPendingSearch(true)
 
     try {
-      await search(inputValue, sessionIdRef.current)
+      await search(inputValue)
     } finally {
       setPendingSearch(false)
     }
   }
 
   const handleStructuredSearch = (id, structuredData) => {
-    if (sessionIdRef.current) {
-      searchWithStructuredData(id, structuredData, sessionIdRef.current)
-    }
+    searchWithStructuredData(id, structuredData)
   }
 
   function handleSubmit(evt) {

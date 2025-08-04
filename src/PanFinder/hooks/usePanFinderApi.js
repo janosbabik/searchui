@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
 import { useFeedback } from '../contexts/FeedbackContext'
+import { useSession } from '../contexts/SessionContext'
 import {
   searchRequest,
   structuredSearchRequest,
@@ -9,22 +10,39 @@ import {
   createSessionRequest,
 } from './panFinderApi'
 
-const usePanFinderApi = (onSessionInvalid) => {
+const SESSION_ID_REQUIRED_MSG = 'Session ID is required'
+
+const isUnauthorizedError = (error) =>
+  error.message.includes('HTTP 401') || error.message.includes('Unauthorized')
+
+const usePanFinderApi = () => {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [streamingSteps, setStreamingSteps] = useState([])
   const { setCurrentQueryId } = useFeedback()
+  const {
+    getSessionId,
+    invalidateSession,
+    createSession: createSessionFromContext,
+  } = useSession()
   const controllerRef = useRef(null)
-  const isMounted = useRef(true)
 
   useEffect(
     () => () => {
-      isMounted.current = false
       controllerRef.current?.abort()
     },
     [],
   )
+
+  const getValidSessionId = useCallback(() => {
+    const sessionId = getSessionId()
+    if (!sessionId || typeof sessionId !== 'string') {
+      setError(new Error(SESSION_ID_REQUIRED_MSG))
+      return null
+    }
+    return sessionId
+  }, [getSessionId])
 
   const handleEvent = useCallback(
     (event) => {
@@ -50,10 +68,6 @@ const usePanFinderApi = (onSessionInvalid) => {
 
   const executeSearch = useCallback(
     async (searchFunction, ...args) => {
-      const isUnauthorizedError = (error) =>
-        error.message.includes('HTTP 401') ||
-        error.message.includes('Unauthorized')
-
       setIsLoading(true)
       setError(null)
       setData(null)
@@ -67,19 +81,26 @@ const usePanFinderApi = (onSessionInvalid) => {
       controllerRef.current = controller
 
       try {
-        await searchFunction(...args, handleEvent, controller.signal)
+        const sessionId = getValidSessionId()
+        if (!sessionId) {
+          setIsLoading(false)
+          setError(new Error(SESSION_ID_REQUIRED_MSG))
+          return
+        }
+
+        await searchFunction(...args, sessionId, handleEvent, controller.signal)
       } catch (error_) {
-        if (error_.name !== 'AbortError' && isMounted.current) {
+        if (error_.name !== 'AbortError') {
           if (isUnauthorizedError(error_)) {
-            onSessionInvalid && onSessionInvalid()
+            invalidateSession()
           } else {
             setError(error_)
           }
           setData(null)
         }
       } finally {
-        if (isMounted.current) {
-          setStreamingSteps([])
+        if (!controller.signal.aborted) {
+          setStreamingSteps([]) // Clear streaming steps after processing
           setIsLoading(false)
         }
         if (controllerRef.current === controller) {
@@ -87,56 +108,47 @@ const usePanFinderApi = (onSessionInvalid) => {
         }
       }
     },
-    [handleEvent, setCurrentQueryId, onSessionInvalid],
+    [handleEvent, setCurrentQueryId, invalidateSession, getValidSessionId],
   )
 
   const search = useCallback(
-    async (query, sessionId) => {
+    async (query) => {
       if (!query || typeof query !== 'string' || query.trim() === '') {
         setError(new Error('Query is required and must be a non-empty string'))
         setIsLoading(false)
         return
       }
 
-      if (!sessionId || typeof sessionId !== 'string') {
-        setError(new Error('Session ID is required'))
-        setIsLoading(false)
-        return
-      }
-
-      await executeSearch(searchRequest, query, sessionId)
+      await executeSearch(searchRequest, query)
     },
     [executeSearch],
   )
 
-  const createSession = useCallback(async (turnstileToken) => {
-    try {
-      return await createSessionRequest(turnstileToken)
-    } catch (error_) {
-      throw new Error(`Failed to create session: ${error_.message}`)
-    }
-  }, [])
+  const createSession = useCallback(
+    async (turnstileToken) => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        return await createSessionFromContext(
+          createSessionRequest,
+          turnstileToken,
+        )
+      } catch (error_) {
+        const sessionError = new Error(
+          `Failed to create session: ${error_.message}`,
+        )
+        setError(sessionError)
+        throw sessionError
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [createSessionFromContext],
+  )
 
   const searchWithStructuredData = useCallback(
-    async (id, structuredData, sessionId) => {
-      if (!structuredData || typeof structuredData !== 'object') {
-        setError(new Error('Structured data is required and must be an object'))
-        setIsLoading(false)
-        return
-      }
-
-      if (!sessionId || typeof sessionId !== 'string') {
-        setError(new Error('Session ID is required'))
-        setIsLoading(false)
-        return
-      }
-
-      await executeSearch(
-        structuredSearchRequest,
-        id,
-        structuredData,
-        sessionId,
-      )
+    async (id, structuredData) => {
+      await executeSearch(structuredSearchRequest, id, structuredData)
     },
     [executeSearch],
   )
@@ -152,12 +164,27 @@ const usePanFinderApi = (onSessionInvalid) => {
   const submitFeedback = useCallback(
     async ({ statistic_id, feedback_type, doi }) => {
       try {
-        return await submitFeedbackRequest({ statistic_id, feedback_type, doi })
+        const sessionId = getValidSessionId()
+        if (!sessionId) {
+          return
+        }
+
+        return await submitFeedbackRequest({
+          statistic_id,
+          feedback_type,
+          doi,
+          sessionId,
+        })
       } catch (error_) {
+        if (isUnauthorizedError(error_)) {
+          invalidateSession()
+        } else {
+          setError(error_)
+        }
         throw new Error(`Failed to submit feedback: ${error_.message}`)
       }
     },
-    [],
+    [invalidateSession, getValidSessionId],
   )
 
   const reset = useCallback(() => {

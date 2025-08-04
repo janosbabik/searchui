@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
 
+import { Flex, Box, Text } from '../../Primitives'
 import { useFeedback } from '../contexts/FeedbackContext'
 import { usePanFinderApi } from '../hooks/usePanFinderApi'
-import { Flex, Box, Text } from '../../Primitives'
 
 function LoadingRow() {
   return (
@@ -37,9 +37,7 @@ function ErrorRow({ error }) {
     <tr>
       <td colSpan="4" style={{ padding: '16px' }}>
         <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
-          <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>
-            Error loading details: {error}
-          </Text>
+          <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>{error}</Text>
         </Box>
       </td>
     </tr>
