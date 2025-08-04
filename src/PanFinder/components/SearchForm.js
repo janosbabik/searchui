@@ -22,6 +22,7 @@ function SearchForm({
   handleSubmit,
   isLoading,
   setInputValue,
+  disabled = false,
 }) {
   return (
     <Box as="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
@@ -31,6 +32,7 @@ function SearchForm({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Enter search text... (e.g., 'datasets where publisher is ESS')"
+          disabled={disabled}
           sx={{
             width: '100%',
             height: '120px',
@@ -38,12 +40,14 @@ function SearchForm({
             resize: 'vertical',
             paddingRight: '50px',
             border: '1px solid #646eb1',
+            opacity: disabled ? 0.6 : 1,
+            cursor: disabled ? 'not-allowed' : 'text',
           }}
         />
         <Button
           aria-label="Search"
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           sx={{
             position: 'absolute',
             top: '8px',
@@ -62,14 +66,22 @@ function SearchForm({
 
       {/* Example queries */}
       <Box sx={{ textAlign: 'center' }}>
-        <Text as="p" sx={{ mb: 3, fontWeight: 'medium', fontSize: 1 }}>
+        <Text
+          as="p"
+          sx={{
+            mb: 3,
+            fontWeight: 'medium',
+            fontSize: 1,
+            opacity: disabled ? 0.6 : 1,
+          }}
+        >
           Try these example queries:
         </Text>
         <Flex sx={{ flexWrap: 'wrap', justifyContent: 'center', gap: 2 }}>
           {exampleQueries.map((query) => (
             <Button
               key={query}
-              disabled={isLoading}
+              disabled={isLoading || disabled}
               onClick={() => setInputValue(query)}
               variant="outline"
               sx={{

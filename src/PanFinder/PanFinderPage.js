@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 
 import { usePanFinderApi } from '../Api/usePanFinderApi'
 import { Box } from '../Primitives'
@@ -18,43 +18,97 @@ function PanFinderPage() {
   const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
   const [pendingSearch, setPendingSearch] = useState(false)
-  const [turnstileError, setTurnstileError] = useState(null)
   const [token, setToken] = useState(null)
-  const tokenRef = useRef(token)
+  const [sessionId, setSessionId] = useState(null)
+  const [sessionCreating, setSessionCreating] = useState(false)
+  const [widgetRendered, setWidgetRendered] = useState(false)
+  const sessionIdRef = useRef(sessionId)
+  const {
+    turnstile,
+    isLoading: turnstileLoading,
+    error: turnstileError,
+    scriptLoaded,
+    reset: resetTurnstile,
+    removeWidget,
+  } = useTurnstile()
+  const turnstileRef = useRef(null)
+
+  // Handle session invalidation
+  const handleSessionInvalid = useCallback(() => {
+    setSessionId(null)
+    resetTurnstile()
+    // Widget will be re-rendered when sessionId becomes null
+  }, [resetTurnstile])
+
   const {
     data,
     error,
     isLoading,
     streamingSteps,
-    setStreamingSteps,
     search,
     searchWithStructuredData,
     fetchDocumentDetails,
-  } = usePanFinderApi()
-  const turnstile = useTurnstile()
-  const turnstileRef = useRef(null)
+    createSession,
+  } = usePanFinderApi(handleSessionInvalid)
 
-  // Keep tokenRef in sync with token state
   useEffect(() => {
-    tokenRef.current = token
-  }, [token])
+    sessionIdRef.current = sessionId
+  }, [sessionId])
 
-  // Render the invisible widget once the script is loaded
+  // Handle Turnstile token and create session
   useEffect(() => {
-    if (turnstile && turnstileRef.current) {
+    const handleSessionCreation = async () => {
+      if (token && !sessionId && !sessionCreating) {
+        setSessionCreating(true)
+        resetTurnstile()
+
+        try {
+          const response = await createSession(token)
+          setSessionId(response.session_id)
+          setToken(null) // Clear token after creating session
+        } catch {
+          setToken(null)
+        } finally {
+          setSessionCreating(false)
+        }
+      }
+    }
+
+    handleSessionCreation()
+  }, [token, sessionId, sessionCreating, createSession, resetTurnstile])
+
+  // Render the managed widget once the script is loaded and when session is invalid
+  useEffect(() => {
+    if (
+      turnstile &&
+      turnstileRef.current &&
+      !sessionId &&
+      scriptLoaded &&
+      !widgetRendered
+    ) {
+      // Clear any existing widget first
+      turnstileRef.current.innerHTML = ''
+
+      // Render new widget
       turnstile.render(turnstileRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
-        size: 'invisible',
+        callback: (token) => setToken(token),
         'error-callback': (error) => {
-          setTurnstileError(error)
           setToken(null) // Reset token on error
         },
       })
-      turnstile.execute(turnstileRef.current, {
-        callback: (token) => setToken(token),
-      })
+      setWidgetRendered(true)
     }
-  }, [turnstile])
+
+    if (sessionId && widgetRendered) {
+      // Clean up widget when session is active
+      if (turnstileRef.current) {
+        removeWidget('turnstile-widget')
+        turnstileRef.current.innerHTML = ''
+      }
+      setWidgetRendered(false)
+    }
+  }, [turnstile, sessionId, scriptLoaded, widgetRendered, removeWidget]) // Re-run when dependencies change
 
   const handleRowExpand = async (doi) => {
     const newExpandedRows = new Set(expandedRows)
@@ -96,33 +150,24 @@ function PanFinderPage() {
       return // Prevent multiple requests if already pending
     }
 
-    setPendingSearch(true)
-
-    if (!tokenRef.current) {
-      setStreamingSteps((prev) => [...prev, { event: 'waiting_turnstile' }])
-      await new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (tokenRef.current) {
-            clearInterval(interval)
-            resolve()
-          }
-        }, 200)
-      })
+    // Check if we have a valid session
+    if (!sessionIdRef.current) {
+      return
     }
 
+    setPendingSearch(true)
+
     try {
-      await search(inputValue, tokenRef.current)
+      await search(inputValue, sessionIdRef.current)
     } finally {
-      setToken(null) // Reset token after search
-      if (turnstileRef.current) {
-        turnstile.reset(turnstileRef.current) // Reset Turnstile widget
-      }
       setPendingSearch(false)
     }
   }
 
   const handleStructuredSearch = (id, structuredData) => {
-    searchWithStructuredData(id, structuredData)
+    if (sessionIdRef.current) {
+      searchWithStructuredData(id, structuredData, sessionIdRef.current)
+    }
   }
 
   function handleSubmit(evt) {
@@ -137,34 +182,126 @@ function PanFinderPage() {
   function handleKeyDown(evt) {
     if (evt.key === 'Enter' && !evt.shiftKey) {
       evt.preventDefault()
-      handleSearch()
+      if (sessionId) {
+        handleSearch()
+      }
     }
   }
 
   return (
-    <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
-      {/* Cloudflare Turnstile invisible widget */}
-      <div ref={turnstileRef} id="turnstile-widget" />
+    <Box sx={{ maxWidth: '1200px', mx: 'auto', position: 'relative' }}>
+      {/* Main content with conditional blur */}
+      <Box
+        sx={{
+          filter: sessionId ? 'none' : 'blur(4px)',
+          transition: 'filter 0.3s ease-in-out',
+          pointerEvents: sessionId ? 'auto' : 'none',
+        }}
+      >
+        <PageHeader />
 
-      <PageHeader />
-      <SearchForm
-        inputValue={inputValue}
-        handleInputChange={handleInputChange}
-        handleKeyDown={handleKeyDown}
-        handleSubmit={handleSubmit}
-        isLoading={isLoading || pendingSearch}
-        setInputValue={setInputValue}
-      />
-      <StreamingSteps streamingSteps={streamingSteps} />
-      <ErrorDisplay error={error || turnstileError} />
-      <ResultsDisplay
-        data={data}
-        expandedRows={expandedRows}
-        documentDetails={documentDetails}
-        loadingDetails={loadingDetails}
-        handleRowExpand={handleRowExpand}
-      />
-      <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
+        <SearchForm
+          inputValue={inputValue}
+          handleInputChange={handleInputChange}
+          handleKeyDown={handleKeyDown}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading || pendingSearch}
+          setInputValue={setInputValue}
+          disabled={!sessionId}
+        />
+
+        <StreamingSteps streamingSteps={streamingSteps} />
+        <ErrorDisplay error={error || turnstileError} />
+        <ResultsDisplay
+          data={data}
+          expandedRows={expandedRows}
+          documentDetails={documentDetails}
+          loadingDetails={loadingDetails}
+          handleRowExpand={handleRowExpand}
+        />
+        <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
+      </Box>
+
+      {/* Overlay with Turnstile widget when no session */}
+      {!sessionId && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
+              p: 4,
+              boxShadow: 24,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              minWidth: '400px',
+            }}
+          >
+            <Box sx={{ mb: 2, textAlign: 'center' }}>
+              <Box sx={{ fontSize: '1.25rem', fontWeight: 'medium', mb: 1 }}>
+                Security Verification Required
+              </Box>
+              <Box sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                Please complete the security challenge to continue
+              </Box>
+            </Box>
+
+            {turnstileLoading ? (
+              <Box
+                sx={{
+                  mt: 2,
+                  color: 'text.secondary',
+                  fontSize: '0.875rem',
+                  textAlign: 'center',
+                }}
+              >
+                Loading security challenge...
+              </Box>
+            ) : turnstileError ? (
+              <Box
+                sx={{
+                  mt: 2,
+                  color: 'error.main',
+                  fontSize: '0.875rem',
+                  textAlign: 'center',
+                }}
+              >
+                {turnstileError.message ||
+                  'Failed to load security challenge. Please refresh the page.'}
+              </Box>
+            ) : (
+              <div ref={turnstileRef} id="turnstile-widget" />
+            )}
+
+            {sessionCreating && (
+              <Box
+                sx={{
+                  mt: 2,
+                  color: 'text.secondary',
+                  fontSize: '0.875rem',
+                  textAlign: 'center',
+                }}
+              >
+                Creating secure session...
+              </Box>
+            )}
+          </Box>
+        </Box>
+      )}
     </Box>
   )
 }

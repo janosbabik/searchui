@@ -52,13 +52,21 @@ const processStream = async (reader, onEvent) => {
   }
 }
 
-export const searchRequest = async (
-  query,
-  turnstile_token,
-  onEvent,
-  signal,
-) => {
-  const searchData = { query, turnstile_token }
+export const createSessionRequest = async (turnstile_token) => {
+  if (!turnstile_token || typeof turnstile_token !== 'string') {
+    throw new Error('Turnstile token is required')
+  }
+
+  const response = await apiRequest(`${PAN_FINDER_API_BASE}/session/create`, {
+    method: 'POST',
+    headers: { 'Content-Type': JSON_CONTENT_TYPE },
+    body: JSON.stringify({ turnstile_token }),
+  })
+  return response.json()
+}
+
+export const searchRequest = async (query, session_id, onEvent, signal) => {
+  const searchData = { query, session_id }
   const response = await apiRequest(`${PAN_FINDER_API_BASE}/search`, {
     method: 'POST',
     headers: { 'Content-Type': JSON_CONTENT_TYPE },
@@ -72,12 +80,14 @@ export const searchRequest = async (
 export const structuredSearchRequest = async (
   id,
   structuredData,
+  sessionId,
   onEvent,
   signal,
 ) => {
   const searchData = {
     modified_query_id: id,
     structured_data: structuredData,
+    session_id: sessionId,
   }
   const response = await apiRequest(
     `${PAN_FINDER_API_BASE}/search/structured`,

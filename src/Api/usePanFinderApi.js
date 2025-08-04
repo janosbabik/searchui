@@ -6,9 +6,10 @@ import {
   structuredSearchRequest,
   fetchDocumentDetailsRequest,
   submitFeedbackRequest,
+  createSessionRequest,
 } from './panFinderApi'
 
-const usePanFinderApi = () => {
+const usePanFinderApi = (onSessionInvalid) => {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -49,6 +50,10 @@ const usePanFinderApi = () => {
 
   const executeSearch = useCallback(
     async (searchFunction, ...args) => {
+      const isUnauthorizedError = (error) =>
+        error.message.includes('HTTP 401') ||
+        error.message.includes('Unauthorized')
+
       setIsLoading(true)
       setError(null)
       setData(null)
@@ -65,7 +70,11 @@ const usePanFinderApi = () => {
         await searchFunction(...args, handleEvent, controller.signal)
       } catch (error_) {
         if (error_.name !== 'AbortError' && isMounted.current) {
-          setError(error_)
+          if (isUnauthorizedError(error_)) {
+            onSessionInvalid && onSessionInvalid()
+          } else {
+            setError(error_)
+          }
           setData(null)
         }
       } finally {
@@ -78,31 +87,56 @@ const usePanFinderApi = () => {
         }
       }
     },
-    [handleEvent, setCurrentQueryId],
+    [handleEvent, setCurrentQueryId, onSessionInvalid],
   )
 
   const search = useCallback(
-    async (query, turnstileToken) => {
+    async (query, sessionId) => {
       if (!query || typeof query !== 'string' || query.trim() === '') {
         setError(new Error('Query is required and must be a non-empty string'))
         setIsLoading(false)
         return
       }
 
-      await executeSearch(searchRequest, query, turnstileToken)
+      if (!sessionId || typeof sessionId !== 'string') {
+        setError(new Error('Session ID is required'))
+        setIsLoading(false)
+        return
+      }
+
+      await executeSearch(searchRequest, query, sessionId)
     },
     [executeSearch],
   )
 
+  const createSession = useCallback(async (turnstileToken) => {
+    try {
+      return await createSessionRequest(turnstileToken)
+    } catch (error_) {
+      throw new Error(`Failed to create session: ${error_.message}`)
+    }
+  }, [])
+
   const searchWithStructuredData = useCallback(
-    async (id, structuredData) => {
+    async (id, structuredData, sessionId) => {
       if (!structuredData || typeof structuredData !== 'object') {
         setError(new Error('Structured data is required and must be an object'))
         setIsLoading(false)
         return
       }
 
-      await executeSearch(structuredSearchRequest, id, structuredData)
+      if (!sessionId || typeof sessionId !== 'string') {
+        setError(new Error('Session ID is required'))
+        setIsLoading(false)
+        return
+      }
+
+      await executeSearch(
+        structuredSearchRequest,
+        id,
+        structuredData,
+        sessionId,
+      )
     },
     [executeSearch],
   )
@@ -139,12 +173,12 @@ const usePanFinderApi = () => {
     error,
     isLoading,
     streamingSteps,
-    setStreamingSteps,
     search,
     searchWithStructuredData,
     reset,
     fetchDocumentDetails,
     submitFeedback,
+    createSession,
   }
 }
 
