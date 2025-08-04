@@ -67,6 +67,7 @@ const usePanFinderApi = () => {
           setExplanationError(null)
           break
         case 'explanation_chunk':
+          setStreamingSteps([])
           // Append new content to explanation
           if (event.data?.content) {
             setExplanation((prev) => prev + event.data.content)
