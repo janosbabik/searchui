@@ -123,15 +123,9 @@ function ResultsDisplay({
                 </th>
                 <th
                   style={{
-                    padding: '12px 8px',
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    fontSize: '13px',
-                    color: '#e2e8f0',
+                    width: '10px',
                   }}
-                >
-                  Score
-                </th>
+                ></th>
               </tr>
             </thead>
             <tbody>

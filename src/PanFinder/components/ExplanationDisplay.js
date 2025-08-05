@@ -1,54 +1,57 @@
 import React, { useEffect, useRef } from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
+import { parse } from 'marked'
 
-import { Box, Flex, Heading, Text } from '../../Primitives'
+import { Box, Flex, Text } from '../../Primitives'
 
-function ExplanationDisplay({
-  explanation,
-  isExplanationComplete,
-  explanationError,
-  isVisible = true,
-}) {
-  const explanationRef = useRef(null)
+// Helper for fade in animation styles
+const fadeInAnimation = (delay, duration = '0.3s') => ({
+  opacity: 0,
+  animation: `fadeInUp ${duration} ease-out forwards`,
+  animationDelay: delay,
+})
 
-  // Auto-scroll to bottom when new content is added
+function ExplanationDisplay({ explanation, explanationError }) {
+  const explanationBoxRef = useRef(null)
+
+  // Scroll the page to follow the explanation box as it grows
   useEffect(() => {
-    if (explanationRef.current && explanation) {
-      explanationRef.current.scrollTop = explanationRef.current.scrollHeight
+    if (explanationBoxRef.current && explanation) {
+      const explanationBox = explanationBoxRef.current
+      const rect = explanationBox.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+
+      if (rect.bottom > windowHeight) {
+        const scrollAmount = rect.bottom - windowHeight + 20
+        window.scrollBy({
+          top: scrollAmount,
+          behavior: 'smooth',
+        })
+      }
     }
   }, [explanation])
 
-  if (!isVisible || (!explanation && !explanationError)) {
+  if (!explanation && !explanationError) {
     return null
   }
 
-  return (
-    <Box
-      sx={{
-        mt: 4,
-        opacity: 0,
-        animation: 'fadeInUp 0.3s ease-out forwards',
-        animationDelay: '0.1s',
-      }}
-    >
-      <Flex
-        sx={{
-          alignItems: 'center',
-          gap: 2,
-          mb: 3,
-        }}
-      >
-        <Heading as="h3" sx={{ m: 0, fontSize: 2 }}>
-          Search Explanation
-        </Heading>
-      </Flex>
+  // Pre-calculate animation styles
+  const containerAnimation = fadeInAnimation('0.1s')
+  const boxAnimation = fadeInAnimation('0.4s')
 
+  return (
+    <Box ref={explanationBoxRef} sx={containerAnimation}>
       <Box
         sx={{
-          bg: '#1a202c',
+          bg: '#0c0f16ff',
           border: '1px solid #2d3748',
-          borderRadius: '6px',
+          borderRadius: '3px',
           overflow: 'hidden',
+          transition: 'all 0.3s ease-in-out',
+          ...boxAnimation,
+          '&:hover': {
+            borderColor: '#4a5568',
+          },
         }}
       >
         {explanationError ? (
@@ -64,53 +67,19 @@ function ExplanationDisplay({
             <Text sx={{ fontSize: 1, mb: 0 }}>{explanationError}</Text>
           </Flex>
         ) : (
-          <Box
-            ref={explanationRef}
-            sx={{
-              p: 3,
-              maxHeight: '300px',
-              overflowY: 'auto',
-              fontSize: 1,
-              lineHeight: 1.6,
-              color: '#e2e8f0',
-              '&::-webkit-scrollbar': {
-                width: '6px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: '#2d3748',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: '#4a5568',
-                borderRadius: '3px',
-              },
-              '&::-webkit-scrollbar-thumb:hover': {
-                background: '#718096',
-              },
-            }}
-          >
+          <Box sx={{ p: 3 }}>
             {explanation ? (
               <Text
                 sx={{
-                  mb: 0,
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
+                  '& *': {
+                    color: 'inherit !important',
+                  },
+                  fontSize: 1,
                 }}
-              >
-                {explanation}
-                {!isExplanationComplete && (
-                  <Box
-                    component="span"
-                    sx={{
-                      display: 'inline-block',
-                      width: '8px',
-                      height: '16px',
-                      bg: '#48bb78',
-                      ml: 1,
-                      animation: 'blink 1s infinite',
-                    }}
-                  />
-                )}
-              </Text>
+                dangerouslySetInnerHTML={{
+                  __html: parse(explanation || ''),
+                }}
+              />
             ) : (
               <Text
                 sx={{

@@ -15,17 +15,13 @@ function StreamingSteps({ streamingSteps }) {
         }}
       >
         {streamingSteps.map((step, index) => {
-          const isCompleted =
-            index < streamingSteps.length - 1 ||
-            step.event === 'analysing_done' ||
-            step.event === 'explanation_error' ||
-            step.event === 'error'
+          const isCompleted = index < streamingSteps.length - 1
 
           return (
             <Flex
               key={`${step.timestamp}-${step.event}`}
               sx={{
-                mb: 2,
+                //mb: 2,
                 pb: 2,
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -76,7 +72,6 @@ function StreamingSteps({ streamingSteps }) {
               >
                 {step.event === 'generating_explanation' &&
                   'Generating explanation...'}
-                {step.event === 'explanation_error' && 'Explanation failed'}
                 {step.event === 'analysing_query' && 'Analyzing query...'}
                 {step.event === 'analysing_done' && 'Analysis completed'}
                 {step.event === 'fetching_data' && 'Fetching data...'}

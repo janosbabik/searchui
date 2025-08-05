@@ -2,8 +2,14 @@ import React from 'react'
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi'
 
 import { Text } from '../../Primitives'
-import { getScoreBackgroundColor, getScoreTextColor } from '../utils'
 import DocumentDetails from './DocumentDetails'
+
+export function getScoreBackgroundColor(result, maxScore) {
+  const normalizedScore = maxScore > 0 ? result.overall_score / maxScore : 0
+  const red = Math.round(120 * (1 - normalizedScore))
+  const green = Math.round(100 * normalizedScore)
+  return `rgb(${red}, ${green}, 0)`
+}
 
 function ResultTableRow({
   result,
@@ -104,21 +110,12 @@ function ResultTableRow({
         </td>
         <td
           style={{
-            padding: '12px 8px',
             textAlign: 'center',
             backgroundColor: getScoreBackgroundColor(result, maxScore),
             fontWeight: '600',
           }}
         >
-          <Text
-            sx={{
-              fontWeight: 'normal',
-              fontSize: '13px',
-              color: getScoreTextColor(result, maxScore),
-            }}
-          >
-            {(result.overall_score || 0).toFixed(3)}
-          </Text>
+          {''}
         </td>
       </tr>
       {isExpanded && (

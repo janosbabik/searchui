@@ -26,7 +26,6 @@ function PanFinderPage() {
     isLoading,
     streamingSteps,
     explanation,
-    isExplanationComplete,
     explanationError,
     search,
     searchWithStructuredData,
@@ -124,9 +123,7 @@ function PanFinderPage() {
         <ErrorDisplay error={error || sessionError} />
         <ExplanationDisplay
           explanation={explanation}
-          isExplanationComplete={isExplanationComplete}
           explanationError={explanationError}
-          isVisible={!!data}
         />
         <ResultsDisplay
           data={data}

@@ -32,23 +32,23 @@ function App() {
           mb={5}
           sx={{ flexGrow: 1, maxWidth: ['none', 'none', 'none', 'none'] }}
         >
-          <Switch>
-            <Route exact path="/">
-              <ScrollToTop />
-              <HomePage />
-            </Route>
-            <Route exact path="/pan-finder">
-              <ScrollToTop />
-              <SessionProvider>
+          <SessionProvider>
+            <Switch>
+              <Route exact path="/">
+                <ScrollToTop />
+                <HomePage />
+              </Route>
+              <Route exact path="/pan-finder">
+                <ScrollToTop />
                 <FeedbackProvider>
                   <PanFinderPage />
                 </FeedbackProvider>
-              </SessionProvider>
-            </Route>
-            <Route exact path="/search">
-              <ExplorePage isDesktop={isDesktop} />
-            </Route>
-          </Switch>
+              </Route>
+              <Route exact path="/search">
+                <ExplorePage isDesktop={isDesktop} />
+              </Route>
+            </Switch>
+          </SessionProvider>
         </Box>
         <Footer />
       </Flex>
