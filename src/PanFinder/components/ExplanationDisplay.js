@@ -4,13 +4,6 @@ import { FiAlertCircle } from 'react-icons/fi'
 
 import { Box, Flex, Text } from '../../Primitives'
 
-// Helper for fade in animation styles
-const fadeInAnimation = (delay, duration = '0.3s') => ({
-  opacity: 0,
-  animation: `fadeInUp ${duration} ease-out forwards`,
-  animationDelay: delay,
-})
-
 function ExplanationDisplay({ explanation, explanationError }) {
   const explanationBoxRef = useRef(null)
 
@@ -35,22 +28,28 @@ function ExplanationDisplay({ explanation, explanationError }) {
     return null
   }
 
-  // Pre-calculate animation styles
-  const containerAnimation = fadeInAnimation('0.1s')
-  const boxAnimation = fadeInAnimation('0.4s')
-
   return (
-    <Box ref={explanationBoxRef} sx={containerAnimation}>
+    <Box
+      ref={explanationBoxRef}
+      sx={{
+        mt: 3,
+        opacity: 0,
+        animation: 'fadeInUp 0.3s ease-out forwards',
+      }}
+    >
       <Box
         sx={{
           bg: '#0c0f16ff',
           border: '1px solid #2d3748',
-          borderRadius: '3px',
+          borderRadius: '8px',
           overflow: 'hidden',
-          transition: 'all 0.3s ease-in-out',
-          ...boxAnimation,
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          backdropFilter: 'blur(10px)',
           '&:hover': {
             borderColor: '#4a5568',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+            transform: 'translateY(-2px)',
           },
         }}
       >

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { FiChevronRight } from 'react-icons/fi'
 
 import { Box, Flex, Heading, Text } from '../../Primitives'
@@ -10,10 +10,26 @@ function ResultsDisplay({
   documentDetails,
   loadingDetails,
   handleRowExpand,
+  hasExplanation,
 }) {
+  const [showAllResults, setShowAllResults] = useState(false)
+
+  useEffect(() => {
+    if (!hasExplanation) {
+      setShowAllResults(false)
+    }
+  }, [hasExplanation])
   if (!data) {
     return null
   }
+
+  // Calculate how many results to show when explanation is present
+  const totalResults = data.results?.length || 0
+  const maxResultsWhenExplanation = Math.ceil(totalResults / 4)
+  const shouldTruncate = hasExplanation && totalResults > 4 && !showAllResults
+  const resultsToShow = shouldTruncate
+    ? data.results.slice(0, maxResultsWhenExplanation)
+    : data.results
 
   return (
     <Box
@@ -66,6 +82,7 @@ function ResultsDisplay({
       data.results.length > 0 ? (
         <Box
           sx={{
+            position: 'relative',
             overflowX: 'auto',
             border: '1px solid',
             borderColor: '#4a5568',
@@ -131,7 +148,7 @@ function ResultsDisplay({
               </tr>
             </thead>
             <tbody>
-              {data.results.map((result, index) => {
+              {resultsToShow.map((result, index) => {
                 const maxScore = Math.max(
                   ...data.results.map((r) => r.overall_score || 0),
                 )
@@ -150,6 +167,78 @@ function ResultsDisplay({
               })}
             </tbody>
           </table>
+          {/* Shadow overlay when results are truncated */}
+          {shouldTruncate && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: '60px',
+                background:
+                  'linear-gradient(to bottom, transparent 0%, rgba(45, 55, 72, 0.8) 50%, rgba(45, 55, 72, 0.95) 100%)',
+                pointerEvents: 'none',
+                borderBottomLeftRadius: '3px',
+                borderBottomRightRadius: '3px',
+              }}
+            />
+          )}
+          {/* Show all button */}
+          {shouldTruncate && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: '15px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1,
+              }}
+            >
+              <Box
+                as="button"
+                onClick={() => setShowAllResults(true)}
+                sx={{
+                  background:
+                    'linear-gradient(135deg, #4a5568 0%, #2d3748 100%)',
+                  color: '#e2e8f0',
+                  border: '1px solid #718096',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+                  backdropFilter: 'blur(8px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  '&:hover': {
+                    background:
+                      'linear-gradient(135deg, #718096 0%, #4a5568 100%)',
+                    borderColor: '#a0aec0',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+                  },
+                  '&:active': {
+                    transform: 'translateY(0)',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+              >
+                <span>Show all {totalResults} results</span>
+                <Box
+                  sx={{
+                    fontSize: '10px',
+                    opacity: 0.8,
+                  }}
+                >
+                  ↓
+                </Box>
+              </Box>
+            </Box>
+          )}
         </Box>
       ) : (
         <Box
