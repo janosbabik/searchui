@@ -1,5 +1,11 @@
 import React, { useState } from 'react'
-import { FiEdit3, FiSearch, FiX } from 'react-icons/fi'
+import {
+  FiEdit3,
+  FiSearch,
+  FiX,
+  FiChevronDown,
+  FiChevronRight,
+} from 'react-icons/fi'
 
 import { Box, Text, Button, Flex } from '../../Primitives'
 
@@ -7,6 +13,7 @@ function QueryDetails({ data, onStructuredSearch }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState('')
   const [error, setError] = useState(null)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   if (!data || !data.raw_structured_data || !data.id) {
     return null
@@ -45,22 +52,29 @@ function QueryDetails({ data, onStructuredSearch }) {
         animationDelay: '0.3s',
       }}
     >
-      <details>
-        <summary
-          style={{
-            padding: '12px 16px',
-            fontSize: '13px',
-            fontWeight: '500',
-            cursor: 'pointer',
-            color: '#a0aec0',
-            backgroundColor: '#2d3748',
-            borderBottom: '1px solid #374151',
-            userSelect: 'none',
-            outline: 'none',
-          }}
-        >
-          Query Details
-        </summary>
+      <Box
+        onClick={() => setIsExpanded(!isExpanded)}
+        sx={{
+          padding: '12px 16px',
+          fontSize: '13px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          color: '#a0aec0',
+          backgroundColor: 'rgba(37, 44, 60, 1)',
+          userSelect: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        {isExpanded ? (
+          <FiChevronDown size={16} style={{ color: '#a0aec0' }} />
+        ) : (
+          <FiChevronRight size={16} style={{ color: '#a0aec0' }} />
+        )}
+        Query Details
+      </Box>
+      {isExpanded && (
         <Box
           sx={{
             p: 3,
@@ -197,7 +211,7 @@ function QueryDetails({ data, onStructuredSearch }) {
             </Box>
           )}
         </Box>
-      </details>
+      )}
     </Box>
   )
 }
