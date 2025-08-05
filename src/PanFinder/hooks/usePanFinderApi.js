@@ -219,7 +219,7 @@ const usePanFinderApi = () => {
       controllerRef.current.abort()
       controllerRef.current = null
     }
-    
+
     setData(null)
     setError(null)
     setIsLoading(false)
