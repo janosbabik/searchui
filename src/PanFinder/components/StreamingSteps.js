@@ -8,79 +8,72 @@ function StreamingSteps({ streamingSteps }) {
   }
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Box
-        sx={{
-          p: 2,
-        }}
-      >
-        {streamingSteps.map((step, index) => {
-          const isCompleted = index < streamingSteps.length - 1
+    <>
+      {streamingSteps.map((step, index) => {
+        const isCompleted = index < streamingSteps.length - 1
 
-          return (
-            <Flex
-              key={`${step.timestamp}-${step.event}`}
+        return (
+          <Flex
+            key={`${step.timestamp}-${step.event}`}
+            sx={{
+              pb: 2,
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              opacity: 0,
+              transform: 'translateY(10px)',
+              animation: 'fadeInUp 0.2s ease-out forwards',
+            }}
+          >
+            {/* Progress indicator */}
+            <Box
               sx={{
-                pb: 2,
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 2,
-                opacity: 0,
-                transform: 'translateY(10px)',
-                animation: 'fadeInUp 0.2s ease-out forwards',
-                animationDelay: `${index * 0.05}s`,
+                fontSize: '10px',
+                flexShrink: 0,
+                transition: 'all 0.15s ease',
+                ...(isCompleted
+                  ? {
+                      backgroundColor: '#48bb78',
+                      color: 'white',
+                      transform: 'scale(1.05)',
+                    }
+                  : {
+                      border: '2px solid transparent',
+                      borderTop: '2px solid #48bb78',
+                      borderRight: '2px solid #48bb78',
+                      backgroundColor: 'transparent',
+                      animation: 'spin 1s linear infinite',
+                    }),
               }}
             >
-              {/* Progress indicator */}
-              <Box
-                sx={{
-                  width: '18px',
-                  height: '18px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                  flexShrink: 0,
-                  transition: 'all 0.15s ease',
-                  ...(isCompleted
-                    ? {
-                        backgroundColor: '#48bb78',
-                        color: 'white',
-                        transform: 'scale(1.05)',
-                      }
-                    : {
-                        border: '2px solid transparent',
-                        borderTop: '2px solid #48bb78',
-                        borderRight: '2px solid #48bb78',
-                        backgroundColor: 'transparent',
-                        animation: 'spin 1s linear infinite',
-                      }),
-                }}
-              >
-                {isCompleted ? '✓' : ''}
-              </Box>
-              <Text
-                sx={{
-                  fontSize: 1,
-                  color: '#a0aec0',
-                  fontFamily: 'monospace',
-                  mb: 0,
-                  transition: 'color 0.15s ease',
-                }}
-              >
-                {step.event === 'generating_explanation' &&
-                  'Generating explanation...'}
-                {step.event === 'analysing_query' && 'Analyzing query...'}
-                {step.event === 'analysing_done' && 'Analysis completed'}
-                {step.event === 'fetching_data' && 'Fetching data...'}
-                {step.event === 'error' && 'Error occurred'}
-              </Text>
-            </Flex>
-          )
-        })}
-      </Box>
-    </Box>
+              {isCompleted ? '✓' : ''}
+            </Box>
+            <Text
+              sx={{
+                fontSize: 1,
+                color: '#a0aec0',
+                fontFamily: 'monospace',
+                mb: 0,
+                transition: 'color 0.15s ease',
+              }}
+            >
+              {step.event === 'generating_explanation' &&
+                'Generating explanation...'}
+              {step.event === 'analysing_query' && 'Analyzing query...'}
+              {step.event === 'analysing_done' && 'Analysis completed'}
+              {step.event === 'fetching_data' && 'Fetching data...'}
+              {step.event === 'error' && 'Error occurred'}
+            </Text>
+          </Flex>
+        )
+      })}
+    </>
   )
 }
 
