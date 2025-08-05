@@ -184,8 +184,13 @@ const usePanFinderApi = () => {
   )
 
   const fetchDocumentDetails = useCallback(async (doi) => {
+    const sessionId = getValidSessionId()
+    if (!sessionId) {
+      return
+    }
+
     try {
-      return await fetchDocumentDetailsRequest(doi)
+      return await fetchDocumentDetailsRequest(doi, sessionId)
     } catch (error_) {
       throw new Error(`Failed to fetch document details: ${error_.message}`)
     }

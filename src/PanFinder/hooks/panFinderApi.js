@@ -66,10 +66,13 @@ export const createSessionRequest = async (turnstileToken) => {
 }
 
 export const searchRequest = async (query, sessionId, onEvent, signal) => {
-  const searchData = { query, session_id: sessionId }
+  const searchData = { query }
   const response = await apiRequest(`${PAN_FINDER_API_BASE}/search`, {
     method: 'POST',
-    headers: { 'Content-Type': JSON_CONTENT_TYPE },
+    headers: {
+      'Content-Type': JSON_CONTENT_TYPE,
+      'X-Session-ID': sessionId,
+    },
     body: JSON.stringify(searchData),
     signal,
   })
@@ -87,13 +90,15 @@ export const structuredSearchRequest = async (
   const searchData = {
     modified_query_id: id,
     structured_data: structuredData,
-    session_id: sessionId,
   }
   const response = await apiRequest(
     `${PAN_FINDER_API_BASE}/search/structured`,
     {
       method: 'POST',
-      headers: { 'Content-Type': JSON_CONTENT_TYPE },
+      headers: {
+        'Content-Type': JSON_CONTENT_TYPE,
+        'X-Session-ID': sessionId,
+      },
       body: JSON.stringify(searchData),
       signal,
     },
@@ -102,7 +107,7 @@ export const structuredSearchRequest = async (
   await processStream(reader, onEvent)
 }
 
-export const fetchDocumentDetailsRequest = async (doi) => {
+export const fetchDocumentDetailsRequest = async (doi, sessionId) => {
   if (!doi || typeof doi !== 'string' || doi.trim() === '') {
     throw new Error('DOI is required and must be a non-empty string')
   }
@@ -110,7 +115,10 @@ export const fetchDocumentDetailsRequest = async (doi) => {
     `${PAN_FINDER_API_BASE}/document/${encodeURIComponent(doi)}`,
     {
       method: 'GET',
-      headers: { 'Content-Type': JSON_CONTENT_TYPE },
+      headers: {
+        'Content-Type': JSON_CONTENT_TYPE,
+        'X-Session-ID': sessionId,
+      },
     },
   )
   return response.json()
@@ -127,12 +135,14 @@ export const submitFeedbackRequest = async ({
   }
   const response = await apiRequest(`${PAN_FINDER_API_BASE}/feedback/submit`, {
     method: 'POST',
-    headers: { 'Content-Type': JSON_CONTENT_TYPE },
+    headers: {
+      'Content-Type': JSON_CONTENT_TYPE,
+      'X-Session-ID': sessionId,
+    },
     body: JSON.stringify({
       statistic_id,
       feedback_type,
       doi,
-      session_id: sessionId,
     }),
   })
   return response.json()
