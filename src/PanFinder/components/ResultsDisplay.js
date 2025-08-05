@@ -242,7 +242,7 @@ function ResultsDisplay({
       ) : (
         <Box
           sx={{
-            p: [4, 5],
+            p: [4, 4],
             bg: 'background',
             borderRadius: '12px',
             textAlign: 'center',

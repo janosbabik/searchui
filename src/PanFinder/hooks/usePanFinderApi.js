@@ -214,6 +214,12 @@ const usePanFinderApi = () => {
   )
 
   const reset = useCallback(() => {
+    // Abort any ongoing streaming request
+    if (controllerRef.current) {
+      controllerRef.current.abort()
+      controllerRef.current = null
+    }
+    
     setData(null)
     setError(null)
     setIsLoading(false)

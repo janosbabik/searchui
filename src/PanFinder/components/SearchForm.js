@@ -1,6 +1,6 @@
 import { Textarea } from '@rebass/forms'
 import React from 'react'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch, FiRotateCw } from 'react-icons/fi'
 
 import { Box, Button, Flex, Text } from '../../Primitives'
 
@@ -22,6 +22,8 @@ function SearchForm({
   handleSubmit,
   isLoading,
   setInputValue,
+  handleClear,
+  hasResults = false,
   disabled = false,
 }) {
   return (
@@ -62,6 +64,42 @@ function SearchForm({
         >
           <FiSearch size={18} />
         </Button>
+        {handleClear && hasResults && (
+          <Button
+            aria-label="New Search"
+            size="small"
+            type="button"
+            onClick={handleClear}
+            title="Clear search and reset results"
+            disabled={disabled}
+            sx={{
+              padding: '4px !important',
+              position: 'absolute',
+              bottom: '8px',
+              right: '8px',
+              fontSize: '10px !important',
+              bg: 'transparent',
+              color: '#646eb1',
+              border: '1px solid #646eb1',
+              borderRadius: '2px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              opacity: 0.8,
+              '&:hover': {
+                bg: '#3a5c77ff',
+                opacity: 1,
+              },
+              '&:disabled': {
+                opacity: 0.4,
+                cursor: 'not-allowed',
+              },
+            }}
+          >
+            <FiRotateCw size={14} />
+            New Search
+          </Button>
+        )}
       </Box>
 
       {/* Example queries */}

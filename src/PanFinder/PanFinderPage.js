@@ -31,6 +31,7 @@ function PanFinderPage() {
     searchWithStructuredData,
     fetchDocumentDetails,
     createSession: createSessionApi,
+    reset,
   } = usePanFinderApi()
 
   const handleRowExpand = async (doi) => {
@@ -104,6 +105,15 @@ function PanFinderPage() {
     }
   }
 
+  function handleClear() {
+    setInputValue('')
+    setExpandedRows(new Set())
+    setDocumentDetails({})
+    setLoadingDetails(new Set())
+    setPendingSearch(false) // Reset pending search state
+    reset()
+  }
+
   return (
     <TurnstileSessionGate createSessionApi={createSessionApi}>
       <Box sx={{ maxWidth: '1200px', mx: 'auto' }}>
@@ -116,6 +126,8 @@ function PanFinderPage() {
           handleSubmit={handleSubmit}
           isLoading={isLoading || pendingSearch}
           setInputValue={setInputValue}
+          handleClear={handleClear}
+          hasResults={!!data}
           disabled={!sessionId}
         />
 
