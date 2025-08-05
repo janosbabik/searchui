@@ -34,7 +34,7 @@ function ResultsDisplay({
   return (
     <Box
       sx={{
-        mt: 4,
+        mt: 1,
         opacity: 0,
         animation: 'fadeInUp 0.3s ease-out forwards',
       }}
@@ -54,7 +54,6 @@ function ResultsDisplay({
             fontSize: 0,
             color: '#a0aec0',
             fontStyle: 'italic',
-            ml: 3,
             display: 'flex',
             alignItems: 'center',
             gap: 1,
