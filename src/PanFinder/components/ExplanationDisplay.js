@@ -74,6 +74,7 @@ function ExplanationDisplay({ explanation, explanationError }) {
                     color: 'inherit !important',
                   },
                   fontSize: 1,
+                  fontWeight: '300',
                 }}
                 dangerouslySetInnerHTML={{
                   __html: parse(explanation || ''),
