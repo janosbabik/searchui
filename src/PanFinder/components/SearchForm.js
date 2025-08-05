@@ -27,7 +27,7 @@ function SearchForm({
   disabled = false,
 }) {
   return (
-    <Box as="form" onSubmit={handleSubmit} sx={{ mb: 4 }}>
+    <Box as="form" onSubmit={handleSubmit} sx={{ mb: 2 }}>
       <Box sx={{ width: '100%', position: 'relative', mb: 3 }}>
         <Textarea
           value={inputValue}
@@ -103,7 +103,17 @@ function SearchForm({
       </Box>
 
       {/* Example queries */}
-      <Box sx={{ textAlign: 'center' }}>
+      <Box
+        sx={{
+          textAlign: 'center',
+          transition: 'all 0.4s ease-in-out',
+          opacity: isLoading || hasResults ? 0 : 1,
+          maxHeight: isLoading || hasResults ? '0px' : '500px',
+          overflow: 'hidden',
+          transform:
+            isLoading || hasResults ? 'translateY(-20px)' : 'translateY(0)',
+        }}
+      >
         <Text
           as="p"
           sx={{
