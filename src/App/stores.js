@@ -6,7 +6,7 @@ import create from 'zustand'
 //     ? true
 //     : false;
 
-export const useAppStore = create((set) => ({
+export const useAppStore = create(() => ({
   isDark: true, // preset,
   // toggleTheme: () => {
   //   const newTheme = !get().isDark;

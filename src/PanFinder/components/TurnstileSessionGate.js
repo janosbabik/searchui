@@ -70,7 +70,7 @@ function TurnstileSessionGate({ children, createSessionApi }) {
       const widgetId = turnstile.render(turnstileRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
         callback: (token) => setToken(token),
-        'error-callback': (error) => {
+        'error-callback': () => {
           setToken(null) // Reset token on error
           resetTurnstile()
         },

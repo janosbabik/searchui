@@ -107,7 +107,7 @@ function DocumentItem(props) {
                 py: 1,
                 ':hover': { textDecoration: 'underline' },
               }}
-              onClick={(evt) => {
+              onClick={() => {
                 setIsDetailed(true)
               }}
             >
