@@ -29,7 +29,7 @@ function ResultTableRow({
           backgroundColor: index % 2 === 0 ? '#2d3748' : '#374151',
           opacity: 0,
           animation: 'fadeInUp 0.2s ease-out forwards',
-          animationDelay: `${0.2 + index * 0.02}s`,
+          animationDelay: `${index * 0.02}s`,
           cursor: 'pointer',
           transition: 'all 0.2s ease',
         }}
