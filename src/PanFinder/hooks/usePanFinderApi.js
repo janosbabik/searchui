@@ -1,14 +1,8 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 
 import { useFeedback } from '../contexts/FeedbackContext'
 import { useSession } from '../contexts/SessionContext'
-import {
-  searchRequest,
-  structuredSearchRequest,
-  fetchDocumentDetailsRequest,
-  submitFeedbackRequest,
-  createSessionRequest,
-} from './panFinderApi'
+import { createPanFinderApi, createSessionRequest } from './panFinderApi'
 
 const SESSION_ID_REQUIRED_MSG = 'Session ID is required'
 
@@ -24,11 +18,16 @@ const usePanFinderApi = () => {
   const [explanationError, setExplanationError] = useState(null)
   const { setCurrentQueryId } = useFeedback()
   const {
-    getSessionId,
+    sessionId,
     invalidateSession,
     createSession: createSessionFromContext,
   } = useSession()
   const controllerRef = useRef(null)
+
+  // Create memoized API instance with current session
+  const api = useMemo(() => {
+    return sessionId ? createPanFinderApi(sessionId) : null
+  }, [sessionId])
 
   useEffect(
     () => () => {
@@ -36,15 +35,6 @@ const usePanFinderApi = () => {
     },
     [],
   )
-
-  const getValidSessionId = useCallback(() => {
-    const sessionId = getSessionId()
-    if (!sessionId) {
-      setError(new Error(SESSION_ID_REQUIRED_MSG))
-      return null
-    }
-    return sessionId
-  }, [getSessionId])
 
   const handleEvent = useCallback(
     (event) => {
@@ -104,14 +94,13 @@ const usePanFinderApi = () => {
       controllerRef.current = controller
 
       try {
-        const sessionId = getValidSessionId()
-        if (!sessionId) {
+        if (!api) {
           setIsLoading(false)
           setError(new Error(SESSION_ID_REQUIRED_MSG))
           return
         }
 
-        await searchFunction(...args, sessionId, handleEvent, controller.signal)
+        await searchFunction(...args, handleEvent, controller.signal)
       } catch (error_) {
         if (error_.name !== 'AbortError') {
           if (isUnauthorizedError(error_)) {
@@ -131,7 +120,7 @@ const usePanFinderApi = () => {
         }
       }
     },
-    [handleEvent, setCurrentQueryId, invalidateSession, getValidSessionId],
+    [handleEvent, setCurrentQueryId, invalidateSession, api],
   )
 
   const search = useCallback(
@@ -142,9 +131,9 @@ const usePanFinderApi = () => {
         return
       }
 
-      await executeSearch(searchRequest, query)
+      await executeSearch(api?.search, query)
     },
-    [executeSearch],
+    [executeSearch, api],
   )
 
   const createSession = useCallback(
@@ -178,37 +167,39 @@ const usePanFinderApi = () => {
 
   const searchWithStructuredData = useCallback(
     async (id, structuredData) => {
-      await executeSearch(structuredSearchRequest, id, structuredData)
+      await executeSearch(api?.searchWithStructuredData, id, structuredData)
     },
-    [executeSearch],
+    [executeSearch, api],
   )
 
-  const fetchDocumentDetails = useCallback(async (doi) => {
-    const sessionId = getValidSessionId()
-    if (!sessionId) {
-      return
-    }
+  const fetchDocumentDetails = useCallback(
+    async (doi) => {
+      if (!api) {
+        setError(new Error(SESSION_ID_REQUIRED_MSG))
+        return
+      }
 
-    try {
-      return await fetchDocumentDetailsRequest(doi, sessionId)
-    } catch (error_) {
-      throw new Error(`Failed to fetch document details: ${error_.message}`)
-    }
-  }, [])
+      try {
+        return await api.fetchDocumentDetails(doi)
+      } catch (error_) {
+        throw new Error(`Failed to fetch document details: ${error_.message}`)
+      }
+    },
+    [api],
+  )
 
   const submitFeedback = useCallback(
     async ({ statistic_id, feedback_type, doi }) => {
       try {
-        const sessionId = getValidSessionId()
-        if (!sessionId) {
+        if (!api) {
+          setError(new Error(SESSION_ID_REQUIRED_MSG))
           return
         }
 
-        return await submitFeedbackRequest({
+        return await api.submitFeedback({
           statistic_id,
           feedback_type,
           doi,
-          sessionId,
         })
       } catch (error_) {
         if (isUnauthorizedError(error_)) {
@@ -219,7 +210,7 @@ const usePanFinderApi = () => {
         throw new Error(`Failed to submit feedback: ${error_.message}`)
       }
     },
-    [invalidateSession, getValidSessionId],
+    [invalidateSession, api],
   )
 
   const reset = useCallback(() => {

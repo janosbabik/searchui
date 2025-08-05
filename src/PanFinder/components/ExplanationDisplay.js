@@ -1,6 +1,6 @@
+import { parse } from 'marked'
 import React, { useEffect, useRef } from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
-import { parse } from 'marked'
 
 import { Box, Flex, Text } from '../../Primitives'
 

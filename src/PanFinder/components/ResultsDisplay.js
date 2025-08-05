@@ -125,7 +125,9 @@ function ResultsDisplay({
                   style={{
                     width: '10px',
                   }}
-                ></th>
+                >
+                  {/* Empty column for spacing */}
+                </th>
               </tr>
             </thead>
             <tbody>

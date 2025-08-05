@@ -65,85 +65,86 @@ export const createSessionRequest = async (turnstileToken) => {
   return response.json()
 }
 
-export const searchRequest = async (query, sessionId, onEvent, signal) => {
-  const searchData = { query }
-  const response = await apiRequest(`${PAN_FINDER_API_BASE}/search`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': JSON_CONTENT_TYPE,
-      'X-Session-ID': sessionId,
-    },
-    body: JSON.stringify(searchData),
-    signal,
-  })
-  const reader = response.body.getReader()
-  await processStream(reader, onEvent)
-}
-
-export const structuredSearchRequest = async (
-  id,
-  structuredData,
-  sessionId,
-  onEvent,
-  signal,
-) => {
-  const searchData = {
-    modified_query_id: id,
-    structured_data: structuredData,
+// Factory function that creates session-bound API methods
+export const createPanFinderApi = (sessionId) => {
+  if (!sessionId) {
+    throw new Error('Session ID is required to create API instance')
   }
-  const response = await apiRequest(
-    `${PAN_FINDER_API_BASE}/search/structured`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': JSON_CONTENT_TYPE,
-        'X-Session-ID': sessionId,
-      },
-      body: JSON.stringify(searchData),
-      signal,
-    },
-  )
-  const reader = response.body.getReader()
-  await processStream(reader, onEvent)
-}
 
-export const fetchDocumentDetailsRequest = async (doi, sessionId) => {
-  if (!doi || typeof doi !== 'string' || doi.trim() === '') {
-    throw new Error('DOI is required and must be a non-empty string')
-  }
-  const response = await apiRequest(
-    `${PAN_FINDER_API_BASE}/document/${encodeURIComponent(doi)}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': JSON_CONTENT_TYPE,
-        'X-Session-ID': sessionId,
-      },
+  return {
+    search: async (query, onEvent, signal) => {
+      const searchData = { query }
+      const response = await apiRequest(`${PAN_FINDER_API_BASE}/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': JSON_CONTENT_TYPE,
+          'X-Session-ID': sessionId,
+        },
+        body: JSON.stringify(searchData),
+        signal,
+      })
+      const reader = response.body.getReader()
+      await processStream(reader, onEvent)
     },
-  )
-  return response.json()
-}
 
-export const submitFeedbackRequest = async ({
-  statistic_id,
-  feedback_type,
-  doi,
-  sessionId,
-}) => {
-  if (!statistic_id || !feedback_type || !doi) {
-    throw new Error('statistic_id, feedback_type, and doi are required')
-  }
-  const response = await apiRequest(`${PAN_FINDER_API_BASE}/feedback/submit`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': JSON_CONTENT_TYPE,
-      'X-Session-ID': sessionId,
+    searchWithStructuredData: async (id, structuredData, onEvent, signal) => {
+      const searchData = {
+        modified_query_id: id,
+        structured_data: structuredData,
+      }
+      const response = await apiRequest(
+        `${PAN_FINDER_API_BASE}/search/structured`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': JSON_CONTENT_TYPE,
+            'X-Session-ID': sessionId,
+          },
+          body: JSON.stringify(searchData),
+          signal,
+        },
+      )
+      const reader = response.body.getReader()
+      await processStream(reader, onEvent)
     },
-    body: JSON.stringify({
-      statistic_id,
-      feedback_type,
-      doi,
-    }),
-  })
-  return response.json()
+
+    fetchDocumentDetails: async (doi) => {
+      if (!doi || typeof doi !== 'string' || doi.trim() === '') {
+        throw new Error('DOI is required and must be a non-empty string')
+      }
+      const response = await apiRequest(
+        `${PAN_FINDER_API_BASE}/document/${encodeURIComponent(doi)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': JSON_CONTENT_TYPE,
+            'X-Session-ID': sessionId,
+          },
+        },
+      )
+      return response.json()
+    },
+
+    submitFeedback: async ({ statistic_id, feedback_type, doi }) => {
+      if (!statistic_id || !feedback_type || !doi) {
+        throw new Error('statistic_id, feedback_type, and doi are required')
+      }
+      const response = await apiRequest(
+        `${PAN_FINDER_API_BASE}/feedback/submit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': JSON_CONTENT_TYPE,
+            'X-Session-ID': sessionId,
+          },
+          body: JSON.stringify({
+            statistic_id,
+            feedback_type,
+            doi,
+          }),
+        },
+      )
+      return response.json()
+    },
+  }
 }

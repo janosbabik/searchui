@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-} from 'react'
+import React, { createContext, useContext, useState, useCallback } from 'react'
 
 const SessionContext = createContext({
   sessionId: null,
@@ -17,19 +10,12 @@ const SessionContext = createContext({
   invalidateSession: () => {
     /* default no-op */
   },
-  getSessionId: () => null,
 })
 
 export function SessionProvider({ children }) {
   const [sessionId, setSessionId] = useState(null)
   const [sessionCreating, setSessionCreating] = useState(false)
   const [error, setError] = useState(null)
-  const sessionIdRef = useRef(sessionId)
-
-  // Keep ref in sync with state
-  useEffect(() => {
-    sessionIdRef.current = sessionId
-  }, [sessionId])
 
   const createSession = useCallback(
     async (createSessionFn, token) => {
@@ -70,11 +56,6 @@ export function SessionProvider({ children }) {
   const invalidateSession = useCallback(() => {
     setSessionId(null)
     setError(null)
-    sessionIdRef.current = null
-  }, [])
-
-  const getSessionId = useCallback(() => {
-    return sessionIdRef.current
   }, [])
 
   const contextValue = {
@@ -84,7 +65,6 @@ export function SessionProvider({ children }) {
     setSessionId,
     createSession,
     invalidateSession,
-    getSessionId,
   }
 
   return React.createElement(

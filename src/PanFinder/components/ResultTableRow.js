@@ -114,9 +114,7 @@ function ResultTableRow({
             backgroundColor: getScoreBackgroundColor(result, maxScore),
             fontWeight: '600',
           }}
-        >
-          {''}
-        </td>
+        />
       </tr>
       {isExpanded && (
         <DocumentDetails

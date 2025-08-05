@@ -21,7 +21,6 @@ function StreamingSteps({ streamingSteps }) {
             <Flex
               key={`${step.timestamp}-${step.event}`}
               sx={{
-                //mb: 2,
                 pb: 2,
                 alignItems: 'center',
                 justifyContent: 'center',
