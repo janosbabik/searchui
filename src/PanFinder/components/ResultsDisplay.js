@@ -47,7 +47,7 @@ function ResultsDisplay({
         }}
       >
         <Heading as="h2" sx={{ m: 0 }}>
-          Search Results
+          Documents Found
         </Heading>
         <Text
           sx={{

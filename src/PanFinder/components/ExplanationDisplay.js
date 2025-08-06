@@ -2,7 +2,7 @@ import { parse } from 'marked'
 import React, { useEffect, useRef } from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
 
-import { Box, Flex, Text } from '../../Primitives'
+import { Box, Flex, Text, Heading } from '../../Primitives'
 
 function ExplanationDisplay({ explanation, explanationError }) {
   const explanationBoxRef = useRef(null)
@@ -37,6 +37,17 @@ function ExplanationDisplay({ explanation, explanationError }) {
         animation: 'fadeInUp 0.5s ease-out forwards',
       }}
     >
+      <Flex
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 3,
+        }}
+      >
+        <Heading as="h2" sx={{ m: 0 }}>
+          Explanation
+        </Heading>
+      </Flex>
       <Box
         sx={{
           bg: '#0c0f16ff',
