@@ -28,7 +28,6 @@ function PageHeader() {
           mb: 4,
           fontSize: [1, 2, 2],
           fontWeight: 'medium',
-          color: 'text',
           opacity: 0.8,
           letterSpacing: '0.025em',
           lineHeight: 1.6,

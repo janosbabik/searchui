@@ -9,6 +9,7 @@ const TURNSTILE_SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY
 function TurnstileSessionGate({ children, createSessionApi }) {
   const [token, setToken] = useState(null)
   const [widgetRendered, setWidgetRendered] = useState(false)
+  const [widgetError, setWidgetError] = useState(null)
   const [isCreatingSession, setIsCreatingSession] = useState(false)
   const { sessionId, sessionCreating, error: sessionError } = useSession()
   const {
@@ -70,7 +71,8 @@ function TurnstileSessionGate({ children, createSessionApi }) {
       const widgetId = turnstile.render(turnstileRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
         callback: (token) => setToken(token),
-        'error-callback': () => {
+        'error-callback': (e) => {
+          setWidgetError(e)
           setToken(null) // Reset token on error
           resetTurnstile()
         },
@@ -164,23 +166,22 @@ function TurnstileSessionGate({ children, createSessionApi }) {
               <Box
                 sx={{
                   mt: 2,
-                  color: 'text.secondary',
                   fontSize: '0.875rem',
                   textAlign: 'center',
                 }}
               >
                 Loading security challenge...
               </Box>
-            ) : turnstileError || sessionError ? (
+            ) : turnstileError || sessionError || widgetError ? (
               <Box
                 sx={{
                   mt: 2,
-                  color: 'error.main',
+                  color: '#e53e3e',
                   fontSize: '0.875rem',
-                  textAlign: 'center',
+                  fontWeight: 'bold',
                 }}
               >
-                {(turnstileError || sessionError)?.message ||
+                {(turnstileError || widgetError || sessionError)?.message ||
                   'Failed to load security challenge. Please refresh the page.'}
               </Box>
             ) : (
@@ -191,7 +192,6 @@ function TurnstileSessionGate({ children, createSessionApi }) {
               <Box
                 sx={{
                   mt: 2,
-                  color: 'text.secondary',
                   fontSize: '0.875rem',
                   textAlign: 'center',
                 }}
