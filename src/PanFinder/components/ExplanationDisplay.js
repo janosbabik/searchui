@@ -1,8 +1,15 @@
-import { parse } from 'marked'
+import { Renderer, marked } from 'marked'
 import React, { useEffect, useRef } from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
 
 import { Box, Flex, Text, Heading } from '../../Primitives'
+
+const renderer = new Renderer()
+const linkRenderer = renderer.link
+renderer.link = (href, title, text) => {
+  const html = linkRenderer.call(renderer, href, title, text)
+  return html.replace(/^<a /, '<a target="_blank" rel="nofollow" ')
+}
 
 function ExplanationDisplay({ explanation, explanationError }) {
   const explanationBoxRef = useRef(null)
@@ -77,10 +84,10 @@ function ExplanationDisplay({ explanation, explanationError }) {
                     color: 'inherit !important',
                   },
                   fontSize: 1,
-                  fontWeight: '300',
+                  fontWeight: '500',
                 }}
                 dangerouslySetInnerHTML={{
-                  __html: parse(explanation || ''),
+                  __html: marked(explanation || '', { renderer }),
                 }}
               />
             ) : (
