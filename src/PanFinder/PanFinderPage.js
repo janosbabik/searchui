@@ -133,6 +133,10 @@ function PanFinderPage() {
 
         <StreamingSteps streamingSteps={streamingSteps} />
         <ErrorDisplay error={error || sessionError} />
+        <ExplanationDisplay
+          explanation={explanation}
+          explanationError={explanationError}
+        />
         <ResultsDisplay
           data={data}
           expandedRows={expandedRows}
@@ -140,10 +144,6 @@ function PanFinderPage() {
           loadingDetails={loadingDetails}
           handleRowExpand={handleRowExpand}
           hasExplanation={!!explanation}
-        />
-        <ExplanationDisplay
-          explanation={explanation}
-          explanationError={explanationError}
         />
         <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
       </Box>

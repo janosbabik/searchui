@@ -39,7 +39,7 @@ function ExplanationDisplay({ explanation, explanationError }) {
     <Box
       ref={explanationBoxRef}
       sx={{
-        mt: 4,
+        mt: 1,
         opacity: 0,
         animation: 'fadeInUp 0.5s ease-out forwards',
       }}
@@ -48,11 +48,11 @@ function ExplanationDisplay({ explanation, explanationError }) {
         sx={{
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 3,
+          mb: 1,
         }}
       >
         <Heading as="h2" sx={{ m: 0 }}>
-          Explanation
+          Relevance Explanation
         </Heading>
       </Flex>
       <Box
@@ -76,15 +76,13 @@ function ExplanationDisplay({ explanation, explanationError }) {
             <Text sx={{ fontSize: 1, mb: 0 }}>{explanationError}</Text>
           </Flex>
         ) : (
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ pt: 0, pr: 3, pb: 0, pl: 3 }}>
             {explanation ? (
               <Text
                 sx={{
                   '& *': {
                     color: 'inherit !important',
                   },
-                  fontSize: 1,
-                  fontWeight: '500',
                 }}
                 dangerouslySetInnerHTML={{
                   __html: marked(explanation || '', { renderer }),

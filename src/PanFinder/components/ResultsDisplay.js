@@ -34,7 +34,7 @@ function ResultsDisplay({
   return (
     <Box
       sx={{
-        mt: 1,
+        mt: 3,
         opacity: 0,
         animation: 'fadeInUp 0.3s ease-out forwards',
       }}
@@ -43,11 +43,11 @@ function ResultsDisplay({
         sx={{
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 3,
+          mb: 1,
         }}
       >
         <Heading as="h2" sx={{ m: 0 }}>
-          Documents Found
+          Most Relevant Documents
         </Heading>
         {data.total_results > 0 && (
           <Text

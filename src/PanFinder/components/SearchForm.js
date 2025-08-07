@@ -37,7 +37,7 @@ function SearchForm({
           disabled={disabled}
           sx={{
             width: '100%',
-            height: '120px',
+            height: '100px',
             fontSize: 'large',
             resize: 'vertical',
             paddingRight: '50px',
