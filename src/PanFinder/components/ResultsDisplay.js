@@ -147,23 +147,17 @@ function ResultsDisplay({
               </tr>
             </thead>
             <tbody>
-              {resultsToShow.map((result, index) => {
-                const maxScore = Math.max(
-                  ...data.results.map((r) => r.overall_score || 0),
-                )
-                return (
-                  <ResultTableRow
-                    key={result.doi || index}
-                    result={result}
-                    index={index}
-                    maxScore={maxScore}
-                    onRowClick={handleRowExpand}
-                    isExpanded={expandedRows.has(result.doi)}
-                    documentDetails={documentDetails[result.doi]}
-                    isLoadingDetails={loadingDetails.has(result.doi)}
-                  />
-                )
-              })}
+              {resultsToShow.map((result, index) => (
+                <ResultTableRow
+                  key={result.doi || index}
+                  result={result}
+                  index={index}
+                  onRowClick={handleRowExpand}
+                  isExpanded={expandedRows.has(result.doi)}
+                  documentDetails={documentDetails[result.doi]}
+                  isLoadingDetails={loadingDetails.has(result.doi)}
+                />
+              ))}
             </tbody>
           </table>
           {/* Shadow overlay when results are truncated */}

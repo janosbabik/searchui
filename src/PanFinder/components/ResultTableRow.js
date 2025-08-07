@@ -4,17 +4,15 @@ import { FiChevronDown, FiChevronRight } from 'react-icons/fi'
 import { Text } from '../../Primitives'
 import DocumentDetails from './DocumentDetails'
 
-export function getScoreBackgroundColor(result, maxScore) {
-  const normalizedScore = maxScore > 0 ? result.overall_score / maxScore : 0
-  const red = Math.round(120 * (1 - normalizedScore))
-  const green = Math.round(100 * normalizedScore)
+export function getScoreBackgroundColor({ overall_score: overallScore }) {
+  const red = Math.round(120 * (1 - overallScore))
+  const green = Math.round(100 * overallScore)
   return `rgb(${red}, ${green}, 0)`
 }
 
 function ResultTableRow({
   result,
   index,
-  maxScore,
   onRowClick,
   isExpanded,
   documentDetails,
@@ -111,7 +109,7 @@ function ResultTableRow({
         <td
           style={{
             textAlign: 'center',
-            backgroundColor: getScoreBackgroundColor(result, maxScore),
+            backgroundColor: getScoreBackgroundColor(result),
             fontWeight: '600',
           }}
         />
