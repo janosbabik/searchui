@@ -51,7 +51,7 @@ function ExplanationDisplay({ explanation, explanationError }) {
           mb: 1,
         }}
       >
-        <Heading as="h2" sx={{ m: 0 }}>
+        <Heading as="h2" sx={{ m: 0, color: '#ccccccff' }}>
           Relevance Explanation
         </Heading>
       </Flex>
@@ -76,12 +76,15 @@ function ExplanationDisplay({ explanation, explanationError }) {
             <Text sx={{ fontSize: 1, mb: 0 }}>{explanationError}</Text>
           </Flex>
         ) : (
-          <Box sx={{ pt: 0, pr: 3, pb: 0, pl: 3 }}>
+          <Box sx={{ pt: 0, pr: 3, pb: 0, pl: 3, color: '#ccccccff' }}>
             {explanation ? (
               <Text
                 sx={{
                   '& *': {
                     color: 'inherit !important',
+                  },
+                  '& h2': {
+                    fontSize: '1.2em',
                   },
                 }}
                 dangerouslySetInnerHTML={{

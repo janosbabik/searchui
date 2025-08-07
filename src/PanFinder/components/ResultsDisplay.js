@@ -46,7 +46,7 @@ function ResultsDisplay({
           mb: 1,
         }}
       >
-        <Heading as="h2" sx={{ m: 0 }}>
+        <Heading as="h2" sx={{ m: 0, color: '#ccccccff' }}>
           Most Relevant Documents
         </Heading>
         {data.total_results > 0 && (
