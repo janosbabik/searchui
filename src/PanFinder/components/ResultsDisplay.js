@@ -49,19 +49,21 @@ function ResultsDisplay({
         <Heading as="h2" sx={{ m: 0 }}>
           Documents Found
         </Heading>
-        <Text
-          sx={{
-            fontSize: 0,
-            color: '#a0aec0',
-            fontStyle: 'italic',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
-          <FiChevronRight size={12} />
-          Click rows to view details
-        </Text>
+        {data.total_results > 0 && (
+          <Text
+            sx={{
+              fontSize: 0,
+              color: '#a0aec0',
+              fontStyle: 'italic',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
+            <FiChevronRight size={12} />
+            Click rows to view details
+          </Text>
+        )}
         <Text
           sx={{
             fontSize: 1,
@@ -236,11 +238,11 @@ function ResultsDisplay({
       ) : (
         <Box
           sx={{
-            p: [4, 4],
+            p: [4, 5],
             bg: 'background',
             borderRadius: '12px',
             textAlign: 'center',
-            border: '2px dashed',
+            border: '1px solid',
             borderColor: 'secondary',
             position: 'relative',
             overflow: 'hidden',
@@ -250,37 +252,69 @@ function ResultsDisplay({
             ':before': {
               content: '""',
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              top: '-2px',
+              left: '-2px',
+              right: '-2px',
+              bottom: '-2px',
               background:
-                'linear-gradient(135deg, rgba(36, 114, 179, 0.05) 0%, rgba(100, 110, 177, 0.05) 50%, rgba(187, 70, 119, 0.05) 100%)',
+                'linear-gradient(135deg, rgba(36, 114, 179, 0.1) 0%, rgba(100, 110, 177, 0.1) 50%, rgba(187, 70, 119, 0.1) 100%)',
+              borderRadius: '12px',
               pointerEvents: 'none',
+              zIndex: -1,
             },
           }}
         >
           <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Text
+            {/* Search Icon */}
+            <Box
               sx={{
-                fontWeight: 'semibold',
-                color: 'text',
-                fontSize: [2, 3],
-                mb: 2,
-                lineHeight: 1.3,
+                width: [48, 64],
+                height: [48, 64],
+                mx: 'auto',
+                mb: 3,
+                opacity: 0.6,
+                filter: 'drop-shadow(0 4px 8px rgba(36, 114, 179, 0.2))',
               }}
             >
-              No results found for your search
-            </Text>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                style={{ width: '100%', height: '100%' }}
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+                <circle cx="11" cy="11" r="3" opacity="0.3" />
+              </svg>
+            </Box>
+
             <Text
               sx={{
-                fontSize: [1, 2],
+                fontWeight: 'bold',
+                color: 'text',
+                fontSize: [3, 4],
+                mb: 2,
+                lineHeight: 1.2,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              No research publications found
+            </Text>
+
+            <Text
+              sx={{
+                fontSize: [2, 2],
                 color: 'text',
                 opacity: 0.7,
                 lineHeight: 1.5,
+                mb: 4,
+                maxWidth: '400px',
+                mx: 'auto',
               }}
             >
-              Try different keywords or check the example queries above
+              Your search didn't return any matching documents in our scientific
+              database
             </Text>
           </Box>
         </Box>
