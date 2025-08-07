@@ -63,11 +63,11 @@ function StreamingSteps({ streamingSteps }) {
                 transition: 'color 0.15s ease',
               }}
             >
-              {step.event === 'generating_explanation' &&
+              {step.event === 'explanation_started' &&
                 'Generating explanation...'}
-              {step.event === 'analysing_query' && 'Analyzing query...'}
-              {step.event === 'analysing_done' && 'Analysis completed'}
-              {step.event === 'fetching_data' && 'Fetching data...'}
+              {step.event === 'analysis_started' && 'Analysis started...'}
+              {step.event === 'analysis_completed' && 'Analysis completed'}
+              {step.event === 'data_fetching' && 'Fetching data...'}
               {step.event === 'error' && 'Error occurred'}
             </Text>
           </Flex>

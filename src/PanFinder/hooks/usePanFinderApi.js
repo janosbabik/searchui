@@ -49,7 +49,7 @@ const usePanFinderApi = () => {
             setCurrentQueryId(event.data.id)
           }
           break
-        case 'generating_explanation':
+        case 'explanation_started':
           // Reset explanation state when starting
           setExplanation('')
           setExplanationError(null)
@@ -65,6 +65,9 @@ const usePanFinderApi = () => {
           setExplanationError(
             event.data?.message || 'Failed to generate explanation',
           )
+          break
+        case 'search_completed':
+          setStreamingSteps([]) // Clear streaming steps when search is completed
           break
         case 'error':
           setError(new Error(event.data.message))
