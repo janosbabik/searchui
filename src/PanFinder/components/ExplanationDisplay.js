@@ -58,8 +58,7 @@ function ExplanationDisplay({ explanation, explanationError }) {
       <Box
         sx={{
           bg: '#0c0f16ff',
-          border: '1px solid #2d3748',
-          borderRadius: '4px',
+          borderRadius: '8px',
           overflow: 'hidden',
         }}
       >
