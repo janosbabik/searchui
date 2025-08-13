@@ -46,7 +46,7 @@ function PageHeader() {
               '::after': {
                 content: '""',
                 position: 'absolute',
-                left: '50%',
+                left: '40%',
                 bottom: '-0.4rem',
                 transform: 'translateX(-50%)',
                 width: '60%',
