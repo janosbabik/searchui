@@ -57,29 +57,10 @@ function ExplanationDisplay({ explanation, explanationError }) {
       </Flex>
       <Box
         sx={{
-          position: 'relative',
-          bg: '#0c0f16ff',
+          background:
+            'linear-gradient(135deg, rgba(36, 114, 179, 0.3) 0%, rgba(100, 110, 177, 0.4) 25%, rgba(187, 70, 119, 0.3) 75%, rgba(12, 15, 22, 0.9) 100%)',
           borderRadius: '8px',
           overflow: 'hidden',
-          '::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            borderRadius: '8px',
-            padding: '2px',
-            background:
-              'linear-gradient(135deg, transparent 0%, #2472b3 20%, #646eb1 50%, #bb4677 80%, transparent 100%)',
-            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            maskComposite: 'xor',
-            WebkitMask:
-              'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-            WebkitMaskComposite: 'xor',
-            opacity: 0.6,
-            zIndex: 0,
-          },
         }}
       >
         {explanationError ? (
