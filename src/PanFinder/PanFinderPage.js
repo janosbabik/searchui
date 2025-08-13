@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { Box } from '../Primitives'
+import { Box, Heading } from '../Primitives'
 import ErrorDisplay from './components/ErrorDisplay'
 import ExplanationDisplay from './components/ExplanationDisplay'
 import PageHeader from './components/PageHeader'
@@ -11,6 +11,7 @@ import StreamingSteps from './components/StreamingSteps'
 import TurnstileSessionGate from './components/TurnstileSessionGate'
 import { useSession } from './contexts/SessionContext'
 import { usePanFinderApi } from './hooks/usePanFinderApi'
+import FacilityList from '../Home/Facilites'
 
 function PanFinderPage() {
   const [inputValue, setInputValue] = useState('')
@@ -146,6 +147,40 @@ function PanFinderPage() {
           hasExplanation={!!explanation}
         />
         <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
+
+        <Box
+          sx={{
+            mt: 4,
+            mb: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            '& ul': {
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
+            },
+            '& li': {
+              textAlign: 'center',
+            },
+          }}
+        >
+          <Heading
+            sx={{
+              mb: 2,
+              textAlign: 'center',
+              fontSize: '1.25rem',
+            }}
+          >
+            Open Data from facilities
+          </Heading>
+          <FacilityList only={['ESS', 'ESRF', 'ILL', 'PSI', 'MAXIV']} />
+        </Box>
       </Box>
     </TurnstileSessionGate>
   )
