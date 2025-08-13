@@ -1,26 +1,64 @@
 import React from 'react'
 
-import { Heading, Text } from '../../Primitives'
+import { Heading, Text, Flex, Box } from '../../Primitives'
+import PanFinderLogo from './PanFinderLogo'
 
 function PageHeader() {
   return (
     <>
-      <Heading
-        as="h1"
+      <Flex
         sx={{
-          textAlign: 'center',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: ['column', 'column', 'row'],
+          gap: [1, 1, 1],
           mb: 3,
-          fontSize: [4, 5, 6],
-          background:
-            'linear-gradient(135deg, #2472b3 0%, #646eb1 50%, #bb4677 100%)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          color: 'transparent',
-          WebkitTextFillColor: 'transparent',
+          textAlign: 'center',
         }}
       >
-        PaN-Finder
-      </Heading>
+        <Box
+          sx={{
+            position: 'relative',
+            width: ['100px', '140px', '180px'],
+          }}
+        >
+          <PanFinderLogo
+            title="PaN-Finder"
+            style={{ width: '100%', height: '100%', display: 'block' }}
+          />
+        </Box>
+        <Heading
+          as="h1"
+          sx={{
+            mb: 0,
+            fontSize: [4, 5, 6],
+            background:
+              'linear-gradient(135deg, #2472b3 0%, #646eb1 50%, #bb4677 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            color: 'transparent',
+            WebkitTextFillColor: 'transparent',
+            lineHeight: 1.1,
+            letterSpacing: '-0.015em',
+            position: 'relative',
+            '::after': {
+              content: '""',
+              position: 'absolute',
+              left: '50%',
+              bottom: '-0.4rem',
+              transform: 'translateX(-50%)',
+              width: '60%',
+              height: '3px',
+              borderRadius: '2px',
+              background:
+                'linear-gradient(90deg, rgba(36,114,179,0) 0%, #2472b3 15%, #646eb1 50%, #bb4677 85%, rgba(187,70,119,0) 100%)',
+              opacity: [0.35, 0.4, 0.5],
+            },
+          }}
+        >
+          PaN-Finder
+        </Heading>
+      </Flex>
       <Text
         as="p"
         sx={{
