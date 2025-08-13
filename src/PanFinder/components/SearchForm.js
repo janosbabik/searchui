@@ -29,23 +29,46 @@ function SearchForm({
   return (
     <Box as="form" onSubmit={handleSubmit} sx={{ mb: 2 }}>
       <Box sx={{ width: '100%', position: 'relative', mb: 3 }}>
-        <Textarea
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Enter search text... (e.g., 'datasets where publisher is ESS')"
-          disabled={disabled}
+        <Box
           sx={{
-            width: '100%',
-            height: '100px',
-            fontSize: 'large',
-            resize: 'vertical',
-            paddingRight: '50px',
-            border: '1px solid #646eb1',
-            opacity: disabled ? 0.6 : 1,
-            cursor: disabled ? 'not-allowed' : 'text',
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '8px',
+            '::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background:
+                'linear-gradient(90deg, transparent 0%, #2472b3 20%, #646eb1 50%, #bb4677 80%, transparent 100%)',
+              opacity: 0.6,
+              zIndex: 1,
+            },
           }}
-        />
+        >
+          <Textarea
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter search text... (e.g., 'datasets where publisher is ESS')"
+            disabled={disabled}
+            sx={{
+              width: '100%',
+              height: '100px',
+              fontSize: 'large',
+              resize: 'vertical',
+              paddingRight: '50px',
+              border: '1px solid #646eb1',
+              borderRadius: '8px',
+              opacity: disabled ? 0.6 : 1,
+              cursor: disabled ? 'not-allowed' : 'text',
+              position: 'relative',
+              zIndex: 0,
+            }}
+          />
+        </Box>
         <Button
           aria-label="Search"
           type="submit"
