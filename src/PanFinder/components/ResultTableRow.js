@@ -108,6 +108,17 @@ function ResultTableRow({
         </td>
         <td
           style={{
+            padding: '12px 8px',
+            maxWidth: '200px',
+            textAlign: 'center',
+            fontSize: '12px',
+            color: '#a0aec0',
+          }}
+        >
+          {result.facility_name}
+        </td>
+        <td
+          style={{
             textAlign: 'center',
             backgroundColor: getScoreBackgroundColor(result),
             fontWeight: '600',

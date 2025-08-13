@@ -139,6 +139,7 @@ function ResultsDisplay({
                 >
                   Title
                 </th>
+                <th>Facility</th>
                 <th
                   style={{
                     width: '10px',
