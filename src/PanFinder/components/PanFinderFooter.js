@@ -7,7 +7,7 @@ function PanFinderFooter() {
     <Box
       as="footer"
       sx={{
-        mt: 6,
+        mt: 4,
         mb: 0,
         mx: 'auto',
         maxWidth: '900px',

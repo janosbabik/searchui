@@ -40,7 +40,7 @@ function SearchForm({
               top: 0,
               left: 0,
               right: 0,
-              height: '2px',
+              height: '1px',
               background:
                 'linear-gradient(90deg, transparent 0%, #2472b3 20%, #646eb1 50%, #bb4677 80%, transparent 100%)',
               opacity: 0.6,

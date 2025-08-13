@@ -112,7 +112,7 @@ function ResultTableRow({
             maxWidth: '200px',
             textAlign: 'center',
             fontSize: '12px',
-            color: '#a0aec0',
+            color: '#ced3daff',
           }}
         >
           {result.facility_name}
