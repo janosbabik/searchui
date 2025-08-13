@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Box } from '../Primitives'
 import ErrorDisplay from './components/ErrorDisplay'
 import ExplanationDisplay from './components/ExplanationDisplay'
-import FacilityListWrapper from './components/FacilityListWrapper'
+import FacilitiesSection from './components/FacilitiesSection'
 import PageHeader from './components/PageHeader'
 import QueryDetails from './components/QueryDetails'
 import ResultsDisplay from './components/ResultsDisplay'
@@ -148,7 +148,7 @@ function PanFinderPage() {
         />
         <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
 
-        <FacilityListWrapper only={['ESS', 'ESRF', 'ILL', 'PSI', 'MAXIV']} />
+        <FacilitiesSection only={['ESS', 'ESRF', 'ILL', 'PSI', 'MAXIV']} />
       </Box>
     </TurnstileSessionGate>
   )

@@ -1,15 +1,12 @@
 import React from 'react'
-
-import { Box, Heading } from '../../Primitives'
-import FacilityList from '../../Home/Facilites'
+import providers from '../../providers.json'
+import { Box, Link, Heading } from '../../Primitives'
 
 /**
- * FacilityListWrapper - A wrapper component that displays a title and facility list
- * with centered styling and no list bullet points
+ * FacilitiesSection - Displays a heading and a vertical, centered list of facility providers.
+ * Accepts an optional `only` prop to restrict which facilities are shown by their abbreviation.
  */
-function FacilityListWrapper({
-  only = ['ESS', 'ESRF', 'ILL', 'PSI', 'MAXIV'],
-}) {
+function FacilitiesSection({ only = ['ESS', 'ESRF', 'ILL', 'PSI', 'MAXIV'] }) {
   return (
     <Box
       sx={{
@@ -43,9 +40,19 @@ function FacilityListWrapper({
       >
         Open Data from facilities
       </Heading>
-      <FacilityList only={only} />
+      <ul>
+        {providers
+          .filter((source) => !only || only.includes(source.abbr))
+          .map((source) => (
+            <li key={source.name}>
+              <Link href={source.homepage} blank>
+                {source.name}
+              </Link>
+            </li>
+          ))}
+      </ul>
     </Box>
   )
 }
 
-export default FacilityListWrapper
+export default FacilitiesSection
