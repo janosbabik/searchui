@@ -72,8 +72,8 @@ function PanFinderPage() {
   }
 
   const handleSearch = async () => {
-    if (pendingSearch || !inputValue.trim()) {
-      return // Prevent multiple requests if already pending
+    if (!inputValue.trim()) {
+      return
     }
 
     setPendingSearch(true)
@@ -102,6 +102,8 @@ function PanFinderPage() {
     if (evt.key === 'Enter' && !evt.shiftKey) {
       evt.preventDefault()
       if (sessionId) {
+        // Stop any pending search state immediately to allow new search
+        setPendingSearch(false)
         handleSearch()
       }
     }
