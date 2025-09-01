@@ -9,6 +9,7 @@ const exampleQueries = [
   'Find datasets with a magnetic field of -100 microtesla.',
   "Look for datasets where the instrument's source current was 10 µA (in either polarity)",
   'Find datasets with an incident wavelength was about 153 picometer.',
+  'Find datasets with a source-to-sample distance of 28 meters.',
   "Look for datasets where the publisher is MAX IV and the beam's shape is ellipse and slit vertical is 0.05.",
   'Document where the DOI is 10.15151/ESRF-ES-1317814821.',
   'Find datasets from the Munich Crystallography BAG experiment conducted at the ID23-1 instrument between March 12 and July 27, 2018, where the resolution is less than 2.1 and the number of images is 2.',
