@@ -10,6 +10,30 @@ export function getScoreBackgroundColor({ overall_score: overallScore }) {
   return `rgb(${red}, ${green}, 0)`
 }
 
+function getRelevanceDisplay(resultType) {
+  if (resultType === 'relevant') {
+    return {
+      label: 'High',
+      color: '#48bb78',
+      bgColor: '#1a2e1a',
+      borderColor: '#48bb78',
+    }
+  } else if (resultType === 'weakly_relevant') {
+    return {
+      label: 'Low',
+      color: '#f6ad55',
+      bgColor: '#2d2014',
+      borderColor: '#f6ad55',
+    }
+  }
+  return {
+    label: 'Unknown',
+    color: '#a0aec0',
+    bgColor: '#2d3748',
+    borderColor: '#a0aec0',
+  }
+}
+
 function ResultTableRow({
   result,
   index,
@@ -17,14 +41,28 @@ function ResultTableRow({
   isExpanded,
   documentDetails,
   isLoadingDetails,
+  resultType,
 }) {
+  const relevanceInfo = getRelevanceDisplay(resultType)
+
+  // Adjust row colors based on relevance
+  const baseRowColor =
+    resultType === 'relevant'
+      ? index % 2 === 0
+        ? '#2d3748'
+        : '#374151'
+      : index % 2 === 0
+      ? '#2a2e35'
+      : '#31363d'
+  const hoverRowColor = resultType === 'relevant' ? '#4a5568' : '#3a3f46'
+
   return (
     <>
       <tr
         key={result.doi || index}
         onClick={() => onRowClick(result.doi)}
         style={{
-          backgroundColor: index % 2 === 0 ? '#2d3748' : '#374151',
+          backgroundColor: baseRowColor,
           opacity: 0,
           animation: 'fadeInUp 0.2s ease-out forwards',
           animationDelay: `${index * 0.02}s`,
@@ -32,13 +70,12 @@ function ResultTableRow({
           transition: 'all 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#4a5568'
+          e.currentTarget.style.backgroundColor = hoverRowColor
           e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)'
           e.currentTarget.style.transform = 'translateY(-1px)'
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor =
-            index % 2 === 0 ? '#2d3748' : '#374151'
+          e.currentTarget.style.backgroundColor = baseRowColor
           e.currentTarget.style.boxShadow = 'none'
           e.currentTarget.style.transform = 'translateY(0)'
         }}
@@ -116,6 +153,28 @@ function ResultTableRow({
           }}
         >
           {result.facility_name}
+        </td>
+        <td
+          style={{
+            padding: '12px 8px',
+            textAlign: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '11px',
+              fontWeight: '600',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              border: `1px solid ${relevanceInfo.borderColor}`,
+              backgroundColor: relevanceInfo.bgColor,
+              color: relevanceInfo.color,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+            }}
+          >
+            {relevanceInfo.label}
+          </span>
         </td>
         <td
           style={{

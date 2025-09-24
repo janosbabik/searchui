@@ -170,7 +170,7 @@ function DocumentDetails({ details, isLoading }) {
   return (
     <tr>
       <td
-        colSpan="4"
+        colSpan="5"
         style={{ padding: 0, backgroundColor: '#1a202c', position: 'relative' }}
       >
         <Box

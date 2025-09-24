@@ -23,13 +23,28 @@ function ResultsDisplay({
     return null
   }
 
+  // Combine relevant and weakly relevant results with metadata
+  const relevantResults = (data.relevant_results || []).map((result) => ({
+    ...result,
+    resultType: 'relevant',
+  }))
+  const weaklyRelevantResults = (data.weakly_relevant_results || []).map(
+    (result) => ({
+      ...result,
+      resultType: 'weakly_relevant',
+    }),
+  )
+
+  const allResults = [...relevantResults, ...weaklyRelevantResults]
+  const totalResults = data.total_results || allResults.length
+
   // Calculate how many results to show when explanation is present
-  const totalResults = data.results?.length || 0
-  const maxResultsWhenExplanation = Math.ceil(totalResults / 4)
-  const shouldTruncate = hasExplanation && totalResults > 4 && !showAllResults
+  const maxResultsWhenExplanation = Math.ceil(allResults.length / 4)
+  const shouldTruncate =
+    hasExplanation && allResults.length > 4 && !showAllResults
   const resultsToShow = shouldTruncate
-    ? data.results.slice(0, maxResultsWhenExplanation)
-    : data.results
+    ? allResults.slice(0, maxResultsWhenExplanation)
+    : allResults
 
   return (
     <Box
@@ -49,7 +64,7 @@ function ResultsDisplay({
         <Heading as="h2" sx={{ m: 0, color: '#ccccccff' }}>
           Most Relevant Documents
         </Heading>
-        {data.total_results > 0 && (
+        {totalResults > 0 && (
           <Text
             sx={{
               fontSize: 0,
@@ -64,23 +79,55 @@ function ResultsDisplay({
             Click rows to view details
           </Text>
         )}
-        <Text
-          sx={{
-            fontSize: 1,
-            color: 'muted',
-            bg: 'muted',
-            px: 2,
-            py: 1,
-            borderRadius: '12px',
-            fontWeight: 'medium',
-          }}
-        >
-          {data.total_results || 0} found
-        </Text>
+        <Flex sx={{ gap: 2, alignItems: 'center' }}>
+          {relevantResults.length > 0 && (
+            <Text
+              sx={{
+                fontSize: 0,
+                color: '#48bb78',
+                bg: '#1a2e1a',
+                px: 2,
+                py: 1,
+                borderRadius: '12px',
+                fontWeight: 'medium',
+                border: '1px solid #48bb78',
+              }}
+            >
+              {relevantResults.length} highly relevant
+            </Text>
+          )}
+          {weaklyRelevantResults.length > 0 && (
+            <Text
+              sx={{
+                fontSize: 0,
+                color: '#f6ad55',
+                bg: '#2d2014',
+                px: 2,
+                py: 1,
+                borderRadius: '12px',
+                fontWeight: 'medium',
+                border: '1px solid #f6ad55',
+              }}
+            >
+              {weaklyRelevantResults.length} weakly relevant
+            </Text>
+          )}
+          <Text
+            sx={{
+              fontSize: 1,
+              color: 'muted',
+              bg: 'muted',
+              px: 2,
+              py: 1,
+              borderRadius: '12px',
+              fontWeight: 'medium',
+            }}
+          >
+            {totalResults || 0} total
+          </Text>
+        </Flex>
       </Flex>
-      {data.results &&
-      Array.isArray(data.results) &&
-      data.results.length > 0 ? (
+      {allResults && Array.isArray(allResults) && allResults.length > 0 ? (
         <Box
           sx={{
             position: 'relative',
@@ -139,7 +186,30 @@ function ResultsDisplay({
                 >
                   Title
                 </th>
-                <th>Facility</th>
+                <th
+                  style={{
+                    padding: '12px 8px',
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    color: '#e2e8f0',
+                    width: '120px',
+                  }}
+                >
+                  Facility
+                </th>
+                <th
+                  style={{
+                    padding: '12px 8px',
+                    textAlign: 'center',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    color: '#e2e8f0',
+                    width: '100px',
+                  }}
+                >
+                  Relevance
+                </th>
                 <th
                   style={{
                     width: '10px',
@@ -150,17 +220,41 @@ function ResultsDisplay({
               </tr>
             </thead>
             <tbody>
-              {resultsToShow.map((result, index) => (
-                <ResultTableRow
-                  key={result.doi || index}
-                  result={result}
-                  index={index}
-                  onRowClick={handleRowExpand}
-                  isExpanded={expandedRows.has(result.doi)}
-                  documentDetails={documentDetails[result.doi]}
-                  isLoadingDetails={loadingDetails.has(result.doi)}
-                />
-              ))}
+              {resultsToShow.map((result, index) => {
+                // Add a visual separator between relevant and weakly relevant results
+                const showSeparator =
+                  index > 0 &&
+                  resultsToShow[index - 1]?.resultType === 'relevant' &&
+                  result.resultType === 'weakly_relevant'
+
+                return (
+                  <React.Fragment key={result.doi || index}>
+                    {showSeparator && (
+                      <tr>
+                        <td colSpan="6" style={{ padding: 0 }}>
+                          <div
+                            style={{
+                              height: '1px',
+                              background:
+                                'linear-gradient(90deg, transparent 0%, #4a5568 50%, transparent 100%)',
+                              margin: '8px 0',
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                    <ResultTableRow
+                      result={result}
+                      index={index}
+                      onRowClick={handleRowExpand}
+                      isExpanded={expandedRows.has(result.doi)}
+                      documentDetails={documentDetails[result.doi]}
+                      isLoadingDetails={loadingDetails.has(result.doi)}
+                      resultType={result.resultType}
+                    />
+                  </React.Fragment>
+                )
+              })}
             </tbody>
           </table>
           {/* Shadow overlay when results are truncated */}
@@ -223,7 +317,7 @@ function ResultsDisplay({
                   },
                 }}
               >
-                <span>Show all {totalResults} results</span>
+                <span>Show all {allResults.length} results</span>
                 <Box
                   sx={{
                     fontSize: '10px',
