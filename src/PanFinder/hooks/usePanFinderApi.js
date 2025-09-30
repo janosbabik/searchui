@@ -191,6 +191,25 @@ const usePanFinderApi = () => {
     [api],
   )
 
+  const fetchRawDocument = useCallback(
+    async (doi) => {
+      if (!api) {
+        setError(new Error(SESSION_ID_REQUIRED_MSG))
+        return
+      }
+
+      try {
+        return await api.fetchRawDocument(doi)
+      } catch (error_) {
+        if (isUnauthorizedError(error_)) {
+          invalidateSession()
+        }
+        throw new Error(`Failed to fetch raw document: ${error_.message}`)
+      }
+    },
+    [api, invalidateSession],
+  )
+
   const submitFeedback = useCallback(
     async ({ statistic_id, feedback_type, doi }) => {
       try {
@@ -243,6 +262,7 @@ const usePanFinderApi = () => {
     searchWithStructuredData,
     reset,
     fetchDocumentDetails,
+    fetchRawDocument,
     submitFeedback,
     createSession,
   }

@@ -11,6 +11,29 @@ const apiRequest = async (url, options) => {
   return response
 }
 
+// Helper function to validate DOI parameter
+const validateDoi = (doi) => {
+  if (!doi || typeof doi !== 'string' || doi.trim() === '') {
+    throw new Error('DOI is required and must be a non-empty string')
+  }
+}
+
+// Helper function to create standard headers with session
+const createHeaders = (sessionId, additionalHeaders = {}) => ({
+  'Content-Type': JSON_CONTENT_TYPE,
+  'X-Session-ID': sessionId,
+  ...additionalHeaders,
+})
+
+// Helper function for GET requests that return JSON
+const makeGetRequest = async (url, sessionId) => {
+  const response = await apiRequest(url, {
+    method: 'GET',
+    headers: createHeaders(sessionId),
+  })
+  return response.json()
+}
+
 const processStream = async (reader, onEvent) => {
   const decoder = new TextDecoder()
   let buffer = ''
@@ -76,10 +99,7 @@ export const createPanFinderApi = (sessionId) => {
       const searchData = { query }
       const response = await apiRequest(`${PAN_FINDER_API_BASE}/search`, {
         method: 'POST',
-        headers: {
-          'Content-Type': JSON_CONTENT_TYPE,
-          'X-Session-ID': sessionId,
-        },
+        headers: createHeaders(sessionId),
         body: JSON.stringify(searchData),
         signal,
       })
@@ -96,10 +116,7 @@ export const createPanFinderApi = (sessionId) => {
         `${PAN_FINDER_API_BASE}/search/structured`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': JSON_CONTENT_TYPE,
-            'X-Session-ID': sessionId,
-          },
+          headers: createHeaders(sessionId),
           body: JSON.stringify(searchData),
           signal,
         },
@@ -109,20 +126,19 @@ export const createPanFinderApi = (sessionId) => {
     },
 
     fetchDocumentDetails: async (doi) => {
-      if (!doi || typeof doi !== 'string' || doi.trim() === '') {
-        throw new Error('DOI is required and must be a non-empty string')
-      }
-      const response = await apiRequest(
+      validateDoi(doi)
+      return makeGetRequest(
         `${PAN_FINDER_API_BASE}/document/${encodeURIComponent(doi)}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': JSON_CONTENT_TYPE,
-            'X-Session-ID': sessionId,
-          },
-        },
+        sessionId,
       )
-      return response.json()
+    },
+
+    fetchRawDocument: async (doi) => {
+      validateDoi(doi)
+      return makeGetRequest(
+        `${PAN_FINDER_API_BASE}/document/raw/${encodeURIComponent(doi)}`,
+        sessionId,
+      )
     },
 
     submitFeedback: async ({ statistic_id, feedback_type, doi }) => {
@@ -133,10 +149,7 @@ export const createPanFinderApi = (sessionId) => {
         `${PAN_FINDER_API_BASE}/feedback/submit`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': JSON_CONTENT_TYPE,
-            'X-Session-ID': sessionId,
-          },
+          headers: createHeaders(sessionId),
           body: JSON.stringify({
             statistic_id,
             feedback_type,

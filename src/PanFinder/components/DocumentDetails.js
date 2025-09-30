@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { FiThumbsUp, FiThumbsDown } from 'react-icons/fi'
-
-import { Flex, Box, Text } from '../../Primitives'
+import { FiThumbsUp, FiThumbsDown, FiEye } from 'react-icons/fi'
+import { Flex, Box, Text, Button } from '../../Primitives'
 import { useFeedback } from '../contexts/FeedbackContext'
 import { usePanFinderApi } from '../hooks/usePanFinderApi'
 
@@ -120,10 +119,13 @@ function DocumentField({ label, children }) {
 }
 
 function DocumentDetails({ details, isLoading }) {
-  const { submitFeedback } = usePanFinderApi()
+  const { submitFeedback, fetchRawDocument } = usePanFinderApi()
   const { feedbacks, setFeedback, currentQueryId } = useFeedback()
   const [feedbackStatus, setFeedbackStatus] = useState(null) // 'positive' | 'negative' | 'error' | null
   const [feedbackLoading, setFeedbackLoading] = useState(false)
+  const [rawData, setRawData] = useState(null)
+  const [rawDataLoading, setRawDataLoading] = useState(false)
+  const [rawDataError, setRawDataError] = useState(null)
 
   useEffect(() => {
     if (details?.doi && currentQueryId && feedbacks) {
@@ -154,6 +156,22 @@ function DocumentDetails({ details, isLoading }) {
       setFeedbackStatus('error')
     } finally {
       setFeedbackLoading(false)
+    }
+  }
+
+  const handleFetchRawData = async () => {
+    if (!details?.doi) {
+      return
+    }
+    setRawDataLoading(true)
+    setRawDataError(null)
+    try {
+      const rawResult = await fetchRawDocument(details.doi)
+      setRawData(rawResult)
+    } catch (error) {
+      setRawDataError(error.message)
+    } finally {
+      setRawDataLoading(false)
     }
   }
 
@@ -237,29 +255,8 @@ function DocumentDetails({ details, isLoading }) {
               </DocumentField>
             )}
 
-            {details.summary && (
-              <DocumentField label="Summary">
-                <Box
-                  sx={{
-                    bg: '#2d3748',
-                    p: 2,
-                    borderRadius: '2px',
-                    border: '1px solid #4a5568',
-                    maxHeight: '150px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  <Text
-                    sx={{ fontSize: '13px', color: '#e2e8f0', lineHeight: 1.5 }}
-                  >
-                    {details.summary}
-                  </Text>
-                </Box>
-              </DocumentField>
-            )}
-
-            {details.text && (
-              <DocumentField label="Content">
+            {details.abstract && (
+              <DocumentField label="Abstract">
                 <Box
                   sx={{
                     bg: '#2d3748',
@@ -273,15 +270,59 @@ function DocumentDetails({ details, isLoading }) {
                   <Text
                     sx={{ fontSize: '13px', color: '#e2e8f0', lineHeight: 1.5 }}
                   >
-                    {details.text.length > 500
-                      ? `${details.text.slice(0, 500)}...`
-                      : details.text}
+                    {details.abstract}
                   </Text>
                 </Box>
               </DocumentField>
             )}
 
-            {details.raw && (
+            {!details.raw && !rawData && (
+              <Button
+                variant="action"
+                sx={{
+                  p: 1,
+                  ml: 0,
+                  fontSize: '12px',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+                title="Show Raw Data"
+                onClick={handleFetchRawData}
+                disabled={rawDataLoading}
+              >
+                {rawDataLoading ? (
+                  <>
+                    <Box
+                      sx={{
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        border: '2px solid transparent',
+                        borderTop: '2px solid currentColor',
+                        borderRight: '2px solid currentColor',
+                        animation: 'spin 1s linear infinite',
+                      }}
+                    />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <FiEye size={14} />
+                    Show Raw Data
+                  </>
+                )}
+              </Button>
+            )}
+            {rawDataError && (
+              <DocumentField label="Raw Data">
+                <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
+                  <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>
+                    Error loading raw data: {rawDataError}
+                  </Text>
+                </Box>
+              </DocumentField>
+            )}
+            {rawData && (
               <DocumentField label="Raw Data">
                 <Box
                   sx={{
@@ -303,9 +344,9 @@ function DocumentDetails({ details, isLoading }) {
                       wordBreak: 'break-word',
                     }}
                   >
-                    {typeof details.raw === 'object'
-                      ? JSON.stringify(details.raw, null, 2)
-                      : details.raw}
+                    {typeof rawData === 'object'
+                      ? JSON.stringify(rawData, null, 2)
+                      : rawData}
                   </pre>
                 </Box>
               </DocumentField>
