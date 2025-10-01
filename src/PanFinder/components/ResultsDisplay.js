@@ -284,7 +284,7 @@ function ResultsDisplay({
                 letterSpacing: '-0.02em',
               }}
             >
-              No research publications found
+              No results found
             </Text>
 
             <Text
