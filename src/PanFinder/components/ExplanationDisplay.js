@@ -71,7 +71,7 @@ function ExplanationDisplay({ explanation, explanationError }) {
             ) : (
               <Text
                 sx={{
-                  mb: 0,
+                  p: 2,
                   color: '#a0aec0',
                   fontStyle: 'italic',
                 }}
