@@ -19,6 +19,8 @@ function PanFinderPage() {
   const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
   const [pendingSearch, setPendingSearch] = useState(false)
+  const [explanations, setExplanations] = useState({})
+  const [explanationErrors, setExplanationErrors] = useState({})
   const { sessionId, error: sessionError } = useSession()
 
   const {
@@ -29,6 +31,7 @@ function PanFinderPage() {
     search,
     searchWithStructuredData,
     fetchDocumentDetails,
+    explainDocument,
     createSession: createSessionApi,
     reset,
   } = usePanFinderApi()
@@ -63,6 +66,47 @@ function PanFinderPage() {
           const newLoadingDetailsAfter = new Set(loadingDetails)
           newLoadingDetailsAfter.delete(doi)
           setLoadingDetails(newLoadingDetailsAfter)
+        }
+      }
+
+      // Fetch explanation if not already loaded and we have a statistic ID
+      const explanationKey = `${data?.id}|${doi}`
+      if (data?.id && !explanations[explanationKey]) {
+        setExplanations((prev) => ({ ...prev, [explanationKey]: ' ' }))
+        setExplanationErrors((prev) => ({ ...prev, [explanationKey]: null }))
+
+        const controller = new AbortController()
+
+        const handleEvent = (event) => {
+          if (event.event === 'explanation_chunk') {
+            setExplanations((prev) => {
+              const current = prev[explanationKey] || ''
+              if (current === ' ')
+                return { ...prev, [explanationKey]: event.data?.content || '' }
+              return {
+                ...prev,
+                [explanationKey]: current + (event.data?.content || ''),
+              }
+            })
+          } else if (event.event === 'error') {
+            setExplanationErrors((prev) => ({
+              ...prev,
+              [explanationKey]:
+                event.data?.message || 'Failed to generate explanation',
+            }))
+          }
+        }
+
+        try {
+          await explainDocument(data.id, doi, handleEvent, controller.signal)
+        } catch (error_) {
+          if (error_.name !== 'AbortError') {
+            setExplanationErrors((prev) => ({
+              ...prev,
+              [explanationKey]:
+                error_.message || 'Failed to generate explanation',
+            }))
+          }
         }
       }
     }
@@ -112,6 +156,8 @@ function PanFinderPage() {
     setDocumentDetails({})
     setLoadingDetails(new Set())
     setPendingSearch(false)
+    setExplanations({})
+    setExplanationErrors({})
     reset()
   }
 
@@ -140,6 +186,8 @@ function PanFinderPage() {
           documentDetails={documentDetails}
           loadingDetails={loadingDetails}
           handleRowExpand={handleRowExpand}
+          explanations={explanations}
+          explanationErrors={explanationErrors}
         />
         <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
 

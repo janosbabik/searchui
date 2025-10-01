@@ -10,6 +10,8 @@ function ResultsDisplay({
   documentDetails,
   loadingDetails,
   handleRowExpand,
+  explanations,
+  explanationErrors,
 }) {
   const lastAutoExpandedId = useRef(null)
 
@@ -213,6 +215,10 @@ function ResultsDisplay({
                       isLoadingDetails={loadingDetails.has(result.doi)}
                       resultType={result.resultType}
                       statisticId={data.id}
+                      explanation={explanations[`${data.id}|${result.doi}`]}
+                      explanationError={
+                        explanationErrors[`${data.id}|${result.doi}`]
+                      }
                     />
                   </React.Fragment>
                 )
