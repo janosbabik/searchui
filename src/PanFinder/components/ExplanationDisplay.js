@@ -1,5 +1,5 @@
 import { Renderer, marked } from 'marked'
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
 
 import { Box, Flex, Text, Heading } from '../../Primitives'
@@ -12,36 +12,17 @@ renderer.link = (href, title, text) => {
 }
 
 function ExplanationDisplay({ explanation, explanationError }) {
-  const explanationBoxRef = useRef(null)
-
-  // Scroll the page to follow the explanation box as it grows
-  useEffect(() => {
-    if (explanationBoxRef.current && explanation) {
-      const explanationBox = explanationBoxRef.current
-      const rect = explanationBox.getBoundingClientRect()
-      const windowHeight = window.innerHeight
-
-      if (rect.bottom > windowHeight) {
-        const scrollAmount = rect.bottom - windowHeight + 20
-        window.scrollBy({
-          top: scrollAmount,
-          behavior: 'smooth',
-        })
-      }
-    }
-  }, [explanation])
-
+  // Don't render anything if no content
   if (!explanation && !explanationError) {
     return null
   }
 
   return (
     <Box
-      ref={explanationBoxRef}
       sx={{
         mt: 1,
-        opacity: 0,
-        animation: 'fadeInUp 0.5s ease-out forwards',
+        mb: 3,
+        width: '100%',
       }}
     >
       <Flex

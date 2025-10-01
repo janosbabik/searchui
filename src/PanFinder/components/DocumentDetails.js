@@ -3,6 +3,7 @@ import { FiThumbsUp, FiThumbsDown, FiEye } from 'react-icons/fi'
 import { Flex, Box, Text, Button } from '../../Primitives'
 import { useFeedback } from '../contexts/FeedbackContext'
 import { usePanFinderApi } from '../hooks/usePanFinderApi'
+import ExplanationDisplay from './ExplanationDisplay'
 
 function LoadingRow() {
   return (
@@ -118,14 +119,17 @@ function DocumentField({ label, children }) {
   )
 }
 
-function DocumentDetails({ details, isLoading }) {
-  const { submitFeedback, fetchRawDocument } = usePanFinderApi()
+function DocumentDetails({ details, isLoading, statisticId }) {
+  const { submitFeedback, fetchRawDocument, explainDocument } =
+    usePanFinderApi()
   const { feedbacks, setFeedback, currentQueryId } = useFeedback()
-  const [feedbackStatus, setFeedbackStatus] = useState(null) // 'positive' | 'negative' | 'error' | null
+  const [feedbackStatus, setFeedbackStatus] = useState(null)
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [rawData, setRawData] = useState(null)
   const [rawDataLoading, setRawDataLoading] = useState(false)
   const [rawDataError, setRawDataError] = useState(null)
+  const [explanation, setExplanation] = useState('')
+  const [explanationError, setExplanationError] = useState(null)
 
   useEffect(() => {
     if (details?.doi && currentQueryId && feedbacks) {
@@ -137,6 +141,49 @@ function DocumentDetails({ details, isLoading }) {
       }
     }
   }, [details?.doi, feedbacks, currentQueryId])
+
+  useEffect(() => {
+    if (details?.doi && statisticId) {
+      setExplanation(' ')
+      setExplanationError(null)
+
+      const controller = new AbortController()
+
+      const handleEvent = (event) => {
+        if (event.event === 'explanation_chunk') {
+          setExplanation((prev) => {
+            if (prev === ' ') return event.data?.content || ''
+            return prev + (event.data?.content || '')
+          })
+        } else if (event.event === 'error') {
+          setExplanationError(
+            event.data?.message || 'Failed to generate explanation',
+          )
+        }
+      }
+
+      explainDocument(
+        statisticId,
+        details.doi,
+        handleEvent,
+        controller.signal,
+      ).catch((error) => {
+        if (error.name !== 'AbortError') {
+          setExplanationError(error.message || 'Failed to generate explanation')
+        }
+      })
+
+      return () => {
+        controller.abort()
+        setExplanation('')
+        setExplanationError(null)
+      }
+    } else {
+      setExplanation('')
+      setExplanationError(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details?.doi, statisticId])
 
   const handleFeedback = async (type) => {
     if (!details?.doi || !currentQueryId) {
@@ -198,6 +245,10 @@ function DocumentDetails({ details, isLoading }) {
             feedbackLoading={feedbackLoading}
             feedbackStatus={feedbackStatus}
             handleFeedback={handleFeedback}
+          />
+          <ExplanationDisplay
+            explanation={explanation}
+            explanationError={explanationError}
           />
           <Box sx={{ display: 'grid', gap: 3 }}>
             <DocumentField label="DOI">

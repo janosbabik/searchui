@@ -141,6 +141,26 @@ export const createPanFinderApi = (sessionId) => {
       )
     },
 
+    explainDocument: async (statisticId, doi, onEvent, signal) => {
+      if (!statisticId || !doi) {
+        throw new Error('statistic_id and doi are required')
+      }
+      const response = await apiRequest(
+        `${PAN_FINDER_API_BASE}/search/explain`,
+        {
+          method: 'POST',
+          headers: createHeaders(sessionId),
+          body: JSON.stringify({
+            statistic_id: statisticId,
+            doi,
+          }),
+          signal,
+        },
+      )
+      const reader = response.body.getReader()
+      await processStream(reader, onEvent)
+    },
+
     submitFeedback: async ({ statistic_id, feedback_type, doi }) => {
       if (!statistic_id || !feedback_type || !doi) {
         throw new Error('statistic_id, feedback_type, and doi are required')

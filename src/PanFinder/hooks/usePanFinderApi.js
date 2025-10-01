@@ -210,6 +210,25 @@ const usePanFinderApi = () => {
     [api, invalidateSession],
   )
 
+  const explainDocument = useCallback(
+    async (statisticId, doi, onEvent, signal) => {
+      if (!api) {
+        setError(new Error(SESSION_ID_REQUIRED_MSG))
+        return
+      }
+
+      try {
+        await api.explainDocument(statisticId, doi, onEvent, signal)
+      } catch (error_) {
+        if (isUnauthorizedError(error_)) {
+          invalidateSession()
+        }
+        throw error_
+      }
+    },
+    [api, invalidateSession],
+  )
+
   const submitFeedback = useCallback(
     async ({ statistic_id, feedback_type, doi }) => {
       try {
@@ -263,6 +282,7 @@ const usePanFinderApi = () => {
     reset,
     fetchDocumentDetails,
     fetchRawDocument,
+    explainDocument,
     submitFeedback,
     createSession,
   }

@@ -10,17 +10,18 @@ export function getScoreBackgroundColor({ overall_score: overallScore }) {
   return `rgb(${red}, ${green}, 0)`
 }
 
-function getRelevanceDisplay(resultType) {
+function getRelevanceDisplay(resultType, overallScore) {
+  const label = overallScore ? `${Math.round(overallScore * 100)}%` : 'N/A'
   if (resultType === 'relevant') {
     return {
-      label: 'High',
+      label,
       color: '#48bb78',
       bgColor: '#1a2e1a',
       borderColor: '#48bb78',
     }
   } else if (resultType === 'weakly_relevant') {
     return {
-      label: 'Low',
+      label,
       color: '#f6ad55',
       bgColor: '#2d2014',
       borderColor: '#f6ad55',
@@ -42,8 +43,9 @@ function ResultTableRow({
   documentDetails,
   isLoadingDetails,
   resultType,
+  statisticId,
 }) {
-  const relevanceInfo = getRelevanceDisplay(resultType)
+  const relevanceInfo = getRelevanceDisplay(resultType, result.overall_score)
 
   // Adjust row colors based on relevance
   const baseRowColor =
@@ -156,39 +158,28 @@ function ResultTableRow({
         </td>
         <td
           style={{
-            padding: '12px 8px',
             textAlign: 'center',
+            backgroundColor: getScoreBackgroundColor(result),
+            fontWeight: '600',
           }}
         >
           <span
             style={{
               fontSize: '11px',
               fontWeight: '600',
-              padding: '4px 8px',
-              borderRadius: '12px',
-              border: `1px solid ${relevanceInfo.borderColor}`,
-              backgroundColor: relevanceInfo.bgColor,
-              color: relevanceInfo.color,
-              textTransform: 'uppercase',
               letterSpacing: '0.5px',
             }}
           >
             {relevanceInfo.label}
           </span>
         </td>
-        <td
-          style={{
-            textAlign: 'center',
-            backgroundColor: getScoreBackgroundColor(result),
-            fontWeight: '600',
-          }}
-        />
       </tr>
       {isExpanded && (
         <DocumentDetails
           details={documentDetails}
           isLoading={isLoadingDetails}
           doi={result.doi}
+          statisticId={statisticId}
         />
       )}
     </>

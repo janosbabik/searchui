@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useRef, useMemo } from 'react'
 import { FiChevronRight } from 'react-icons/fi'
 
 import { Box, Flex, Heading, Text } from '../../Primitives'
@@ -10,41 +10,45 @@ function ResultsDisplay({
   documentDetails,
   loadingDetails,
   handleRowExpand,
-  hasExplanation,
 }) {
-  const [showAllResults, setShowAllResults] = useState(false)
+  const lastAutoExpandedId = useRef(null)
 
+  // Combine relevant and weakly relevant results with metadata
+  const allResults = useMemo(() => {
+    const relevantResults = (data?.relevant_results || []).map((result) => ({
+      ...result,
+      resultType: 'relevant',
+    }))
+    const weaklyRelevantResults = (data?.weakly_relevant_results || []).map(
+      (result) => ({
+        ...result,
+        resultType: 'weakly_relevant',
+      }),
+    )
+    return [...relevantResults, ...weaklyRelevantResults]
+  }, [data?.relevant_results, data?.weakly_relevant_results])
+
+  const totalResults = data?.total_results || allResults.length
+  const resultsToShow = allResults
+
+  // Automatically expand the first row when new results are loaded
   useEffect(() => {
-    if (!hasExplanation) {
-      setShowAllResults(false)
+    if (
+      data?.id &&
+      data.id !== lastAutoExpandedId.current &&
+      allResults.length > 0
+    ) {
+      const firstDoi = allResults[0].doi
+      if (firstDoi) {
+        lastAutoExpandedId.current = data.id
+        handleRowExpand(firstDoi)
+      }
     }
-  }, [hasExplanation])
+  }, [data?.id, allResults, handleRowExpand])
+
   if (!data) {
     return null
   }
-
-  // Combine relevant and weakly relevant results with metadata
-  const relevantResults = (data.relevant_results || []).map((result) => ({
-    ...result,
-    resultType: 'relevant',
-  }))
-  const weaklyRelevantResults = (data.weakly_relevant_results || []).map(
-    (result) => ({
-      ...result,
-      resultType: 'weakly_relevant',
-    }),
-  )
-
-  const allResults = [...relevantResults, ...weaklyRelevantResults]
-  const totalResults = data.total_results || allResults.length
-
-  // Calculate how many results to show when explanation is present
-  const maxResultsWhenExplanation = Math.ceil(allResults.length / 4)
-  const shouldTruncate =
-    hasExplanation && allResults.length > 4 && !showAllResults
-  const resultsToShow = shouldTruncate
-    ? allResults.slice(0, maxResultsWhenExplanation)
-    : allResults
 
   return (
     <Box
@@ -80,38 +84,6 @@ function ResultsDisplay({
           </Text>
         )}
         <Flex sx={{ gap: 2, alignItems: 'center' }}>
-          {relevantResults.length > 0 && (
-            <Text
-              sx={{
-                fontSize: 0,
-                color: '#48bb78',
-                bg: '#1a2e1a',
-                px: 2,
-                py: 1,
-                borderRadius: '12px',
-                fontWeight: 'medium',
-                border: '1px solid #48bb78',
-              }}
-            >
-              {relevantResults.length} highly relevant
-            </Text>
-          )}
-          {weaklyRelevantResults.length > 0 && (
-            <Text
-              sx={{
-                fontSize: 0,
-                color: '#f6ad55',
-                bg: '#2d2014',
-                px: 2,
-                py: 1,
-                borderRadius: '12px',
-                fontWeight: 'medium',
-                border: '1px solid #f6ad55',
-              }}
-            >
-              {weaklyRelevantResults.length} weakly relevant
-            </Text>
-          )}
           <Text
             sx={{
               fontSize: 1,
@@ -141,6 +113,7 @@ function ResultsDisplay({
           <table
             style={{
               width: '100%',
+              tableLayout: 'fixed',
               borderCollapse: 'collapse',
               fontSize: '14px',
             }}
@@ -171,6 +144,7 @@ function ResultsDisplay({
                     fontWeight: '600',
                     fontSize: '13px',
                     color: '#e2e8f0',
+                    width: '150px',
                   }}
                 >
                   DOI
@@ -182,6 +156,7 @@ function ResultsDisplay({
                     fontWeight: '600',
                     fontSize: '13px',
                     color: '#e2e8f0',
+                    width: 'auto',
                   }}
                 >
                   Title
@@ -193,30 +168,16 @@ function ResultsDisplay({
                     fontWeight: '600',
                     fontSize: '13px',
                     color: '#e2e8f0',
-                    width: '120px',
+                    width: '150px',
                   }}
                 >
                   Facility
                 </th>
                 <th
                   style={{
-                    padding: '12px 8px',
-                    textAlign: 'center',
-                    fontWeight: '600',
-                    fontSize: '13px',
-                    color: '#e2e8f0',
-                    width: '100px',
+                    width: '80px',
                   }}
-                >
-                  Relevance
-                </th>
-                <th
-                  style={{
-                    width: '10px',
-                  }}
-                >
-                  {/* Empty column for spacing */}
-                </th>
+                ></th>
               </tr>
             </thead>
             <tbody>
@@ -231,7 +192,7 @@ function ResultsDisplay({
                   <React.Fragment key={result.doi || index}>
                     {showSeparator && (
                       <tr>
-                        <td colSpan="6" style={{ padding: 0 }}>
+                        <td colSpan="5" style={{ padding: 0 }}>
                           <div
                             style={{
                               height: '1px',
@@ -251,84 +212,13 @@ function ResultsDisplay({
                       documentDetails={documentDetails[result.doi]}
                       isLoadingDetails={loadingDetails.has(result.doi)}
                       resultType={result.resultType}
+                      statisticId={data.id}
                     />
                   </React.Fragment>
                 )
               })}
             </tbody>
           </table>
-          {/* Shadow overlay when results are truncated */}
-          {shouldTruncate && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: '60px',
-                background:
-                  'linear-gradient(to bottom, transparent 0%, rgba(45, 55, 72, 0.8) 50%, rgba(45, 55, 72, 0.95) 100%)',
-                pointerEvents: 'none',
-                borderBottomLeftRadius: '3px',
-                borderBottomRightRadius: '3px',
-              }}
-            />
-          )}
-          {/* Show all button */}
-          {shouldTruncate && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: '15px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 1,
-              }}
-            >
-              <Box
-                as="button"
-                onClick={() => setShowAllResults(true)}
-                sx={{
-                  background:
-                    'linear-gradient(135deg, #4a5568 0%, #2d3748 100%)',
-                  color: '#e2e8f0',
-                  border: '1px solid #718096',
-                  borderRadius: '6px',
-                  padding: '6px 12px',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-                  backdropFilter: 'blur(8px)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  '&:hover': {
-                    background:
-                      'linear-gradient(135deg, #718096 0%, #4a5568 100%)',
-                    borderColor: '#a0aec0',
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
-                  },
-                  '&:active': {
-                    transform: 'translateY(0)',
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
-                  },
-                }}
-              >
-                <span>Show all {allResults.length} results</span>
-                <Box
-                  sx={{
-                    fontSize: '10px',
-                    opacity: 0.8,
-                  }}
-                >
-                  ↓
-                </Box>
-              </Box>
-            </Box>
-          )}
         </Box>
       ) : (
         <Box

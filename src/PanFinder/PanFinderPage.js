@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 
 import { Box } from '../Primitives'
 import ErrorDisplay from './components/ErrorDisplay'
-import ExplanationDisplay from './components/ExplanationDisplay'
 import FacilitiesSection from './components/FacilitiesSection'
 import PanFinderFooter from './components/PanFinderFooter'
 import PageHeader from './components/PageHeader'
@@ -27,8 +26,6 @@ function PanFinderPage() {
     error,
     isLoading,
     streamingSteps,
-    explanation,
-    explanationError,
     search,
     searchWithStructuredData,
     fetchDocumentDetails,
@@ -114,7 +111,7 @@ function PanFinderPage() {
     setExpandedRows(new Set())
     setDocumentDetails({})
     setLoadingDetails(new Set())
-    setPendingSearch(false) // Reset pending search state
+    setPendingSearch(false)
     reset()
   }
 
@@ -137,17 +134,12 @@ function PanFinderPage() {
 
         <StreamingSteps streamingSteps={streamingSteps} />
         <ErrorDisplay error={error || sessionError} />
-        <ExplanationDisplay
-          explanation={explanation}
-          explanationError={explanationError}
-        />
         <ResultsDisplay
           data={data}
           expandedRows={expandedRows}
           documentDetails={documentDetails}
           loadingDetails={loadingDetails}
           handleRowExpand={handleRowExpand}
-          hasExplanation={!!explanation}
         />
         <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
 
