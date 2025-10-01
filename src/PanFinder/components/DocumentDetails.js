@@ -48,12 +48,22 @@ function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
   return (
     <Box
       sx={{
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        zIndex: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        mt: 2,
+        mb: 3,
+        gap: 2,
       }}
     >
+      <Text
+        sx={{
+          fontSize: '13px',
+          color: '#a0aec0',
+        }}
+      >
+        Was this what you were looking for?
+      </Text>
       <button
         type="button"
         aria-label="Thumbs up"
@@ -62,8 +72,11 @@ function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
           border: 'none',
           cursor: feedbackLoading ? 'not-allowed' : 'pointer',
           color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
-          fontSize: 20,
+          fontSize: 18,
           opacity: feedbackLoading ? 0.5 : 1,
+          padding: '4px',
+          display: 'flex',
+          alignItems: 'center',
         }}
         disabled={feedbackLoading}
         onClick={() => handleFeedback('positive')}
@@ -78,8 +91,11 @@ function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
           border: 'none',
           cursor: feedbackLoading ? 'not-allowed' : 'pointer',
           color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
-          fontSize: 20,
+          fontSize: 18,
           opacity: feedbackLoading ? 0.5 : 1,
+          padding: '4px',
+          display: 'flex',
+          alignItems: 'center',
         }}
         disabled={feedbackLoading}
         onClick={() => handleFeedback('negative')}
@@ -91,7 +107,6 @@ function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
           sx={{
             color: '#e53e3e',
             fontSize: '12px',
-            mt: 1,
           }}
         >
           Error submitting feedback
@@ -106,7 +121,7 @@ function DocumentField({ label, children }) {
     <Box>
       <Text
         sx={{
-          fontSize: '12px',
+          fontSize: '0.9em',
           fontWeight: 'bold',
           color: '#a0aec0',
           mb: 1,
@@ -128,7 +143,7 @@ function DocumentDetails({ details, isLoading, statisticId }) {
   const [rawData, setRawData] = useState(null)
   const [rawDataLoading, setRawDataLoading] = useState(false)
   const [rawDataError, setRawDataError] = useState(null)
-  const [explanation, setExplanation] = useState('')
+  const [explanation, setExplanation] = useState(' ')
   const [explanationError, setExplanationError] = useState(null)
 
   useEffect(() => {
@@ -175,11 +190,11 @@ function DocumentDetails({ details, isLoading, statisticId }) {
 
       return () => {
         controller.abort()
-        setExplanation('')
+        setExplanation(' ')
         setExplanationError(null)
       }
     } else {
-      setExplanation('')
+      setExplanation(' ')
       setExplanationError(null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -239,18 +254,24 @@ function DocumentDetails({ details, isLoading, statisticId }) {
         style={{ padding: 0, backgroundColor: '#1a202c', position: 'relative' }}
       >
         <Box
-          sx={{ p: 4, borderTop: '1px solid #4a5568', position: 'relative' }}
+          sx={{
+            p: 4,
+            paddingTop: 2,
+            paddingBottom: 2,
+            borderTop: '1px solid #4a5568',
+            position: 'relative',
+          }}
         >
+          <ExplanationDisplay
+            explanation={explanation}
+            explanationError={explanationError}
+          />
           <FeedbackButtons
             feedbackLoading={feedbackLoading}
             feedbackStatus={feedbackStatus}
             handleFeedback={handleFeedback}
           />
-          <ExplanationDisplay
-            explanation={explanation}
-            explanationError={explanationError}
-          />
-          <Box sx={{ display: 'grid', gap: 3 }}>
+          <Box sx={{ display: 'grid', gap: 2 }}>
             <DocumentField label="DOI">
               <Text
                 sx={{

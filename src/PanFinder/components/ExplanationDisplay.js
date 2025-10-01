@@ -2,7 +2,7 @@ import { Renderer, marked } from 'marked'
 import React from 'react'
 import { FiAlertCircle } from 'react-icons/fi'
 
-import { Box, Flex, Text, Heading } from '../../Primitives'
+import { Box, Flex, Text } from '../../Primitives'
 
 const renderer = new Renderer()
 const linkRenderer = renderer.link
@@ -12,11 +12,6 @@ renderer.link = (href, title, text) => {
 }
 
 function ExplanationDisplay({ explanation, explanationError }) {
-  // Don't render anything if no content
-  if (!explanation && !explanationError) {
-    return null
-  }
-
   return (
     <Box
       sx={{
@@ -32,9 +27,9 @@ function ExplanationDisplay({ explanation, explanationError }) {
           mb: 1,
         }}
       >
-        <Heading as="h2" sx={{ m: 0, color: '#ccccccff' }}>
+        <Text sx={{ fontSize: 2, color: '#ccccccff' }}>
           Relevance Explanation
-        </Heading>
+        </Text>
       </Flex>
       <Box
         sx={{
@@ -58,11 +53,12 @@ function ExplanationDisplay({ explanation, explanationError }) {
           </Flex>
         ) : (
           <Box sx={{ pt: 0, pr: 3, pb: 0, pl: 3, color: '#ccccccff' }}>
-            {explanation ? (
+            {explanation && explanation.trim() ? (
               <Text
                 sx={{
                   '& *': {
                     color: 'inherit !important',
+                    fontSize: '1.1em',
                   },
                   '& h2': {
                     fontSize: '1.2em',
