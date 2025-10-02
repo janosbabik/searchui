@@ -18,7 +18,6 @@ function PanFinderPage() {
   const [expandedRows, setExpandedRows] = useState(new Set())
   const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
-  const [pendingSearch, setPendingSearch] = useState(false)
   const [explanations, setExplanations] = useState({})
   const [explanationErrors, setExplanationErrors] = useState({})
   const { sessionId, error: sessionError } = useSession()
@@ -117,16 +116,23 @@ function PanFinderPage() {
       return
     }
 
-    setPendingSearch(true)
+    // Clear previous results state to prepare for new search
+    setExpandedRows(new Set())
+    setDocumentDetails({})
+    setLoadingDetails(new Set())
+    setExplanations({})
+    setExplanationErrors({})
 
-    try {
-      await search(inputValue)
-    } finally {
-      setPendingSearch(false)
-    }
+    await search(inputValue)
   }
 
   const handleStructuredSearch = (id, structuredData) => {
+    // Clear previous results state to prepare for new search
+    setExpandedRows(new Set())
+    setDocumentDetails({})
+    setLoadingDetails(new Set())
+    setExplanations({})
+    setExplanationErrors({})
     searchWithStructuredData(id, structuredData)
   }
 
@@ -143,8 +149,6 @@ function PanFinderPage() {
     if (evt.key === 'Enter' && !evt.shiftKey) {
       evt.preventDefault()
       if (sessionId) {
-        // Stop any pending search state immediately to allow new search
-        setPendingSearch(false)
         handleSearch()
       }
     }
@@ -155,7 +159,6 @@ function PanFinderPage() {
     setExpandedRows(new Set())
     setDocumentDetails({})
     setLoadingDetails(new Set())
-    setPendingSearch(false)
     setExplanations({})
     setExplanationErrors({})
     reset()
@@ -171,7 +174,7 @@ function PanFinderPage() {
           handleInputChange={handleInputChange}
           handleKeyDown={handleKeyDown}
           handleSubmit={handleSubmit}
-          isLoading={isLoading || pendingSearch}
+          isLoading={isLoading}
           setInputValue={setInputValue}
           handleClear={handleClear}
           hasResults={!!data}
