@@ -2,7 +2,7 @@ import React from 'react'
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi'
 
 import { Text } from '../../Primitives'
-import DocumentDetails from './DocumentDetails'
+import DocumentDetails from './DocumentDetails/DocumentDetails'
 
 export function getScoreBackgroundColor({ overall_score: overallScore }) {
   const red = Math.round(120 * (1 - overallScore))

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { FiThumbsUp, FiThumbsDown, FiEye, FiDownload } from 'react-icons/fi'
-import { Flex, Box, Text, Button } from '../../Primitives'
-import { useDocumentData } from '../contexts/DocumentDataContext'
-import { useFeedback } from '../contexts/FeedbackContext'
-import { usePanFinderApi } from '../hooks/usePanFinderApi'
-import ExplanationDisplay from './ExplanationDisplay'
+import { FiEye } from 'react-icons/fi'
+import { Flex, Box, Text, Button } from '../../../Primitives'
+import { useDocumentData } from '../../contexts/DocumentDataContext'
+import { useFeedback } from '../../contexts/FeedbackContext'
+import { usePanFinderApi } from '../../hooks/usePanFinderApi'
+import ExplanationDisplay from '../ExplanationDisplay'
+import FeedbackButtons from './FeedbackButtons'
+import RawDataViewer from './RawDataViewer'
 
 function LoadingRow() {
   return (
@@ -40,87 +42,6 @@ function ErrorRow({ error }) {
         </Box>
       </td>
     </tr>
-  )
-}
-
-function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'flex-end',
-      }}
-    >
-      <Box
-        sx={{
-          background:
-            'linear-gradient(135deg, rgba(36, 114, 179, 0.2) 0%, rgba(100, 110, 177, 0.25) 25%, rgba(187, 70, 119, 0.2) 75%, rgba(12, 15, 22, 0.95) 100%)',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          p: 2,
-        }}
-      >
-        <Text
-          sx={{
-            fontSize: '13px',
-            color: '#a0aec0',
-          }}
-        >
-          Was this what you were looking for?
-        </Text>
-        <button
-          type="button"
-          aria-label="Thumbs up"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: feedbackLoading ? 'not-allowed' : 'pointer',
-            color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
-            fontSize: 18,
-            opacity: feedbackLoading ? 0.5 : 1,
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-          disabled={feedbackLoading}
-          onClick={() => handleFeedback('positive')}
-        >
-          <FiThumbsUp />
-        </button>
-        <button
-          type="button"
-          aria-label="Thumbs down"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: feedbackLoading ? 'not-allowed' : 'pointer',
-            color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
-            fontSize: 18,
-            opacity: feedbackLoading ? 0.5 : 1,
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-          disabled={feedbackLoading}
-          onClick={() => handleFeedback('negative')}
-        >
-          <FiThumbsDown />
-        </button>
-        {feedbackStatus === 'error' && (
-          <Text
-            sx={{
-              color: '#e53e3e',
-              fontSize: '13px',
-            }}
-          >
-            Error submitting feedback
-          </Text>
-        )}
-      </Box>
-    </Box>
   )
 }
 
@@ -414,79 +335,11 @@ function DocumentDetails({ details, isLoading, doi, statisticId }) {
             )}
             {rawData && (
               <DocumentField label="Raw Data">
-                <Box sx={{ position: 'relative' }}>
-                  <Box
-                    sx={{
-                      bg: '#111827',
-                      p: 2,
-                      borderRadius: '4px',
-                      border: '1px solid #4a5568',
-                      maxHeight: '400px',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        position: 'sticky',
-                        top: 0,
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        bg: 'transparent',
-                        zIndex: 1,
-                        gap: 2,
-                      }}
-                    >
-                      {rawDataDisplay?.isTruncated && (
-                        <Box
-                          sx={{
-                            p: 2,
-                            bg: '#2d3748',
-                            borderRadius: '4px',
-                            flex: 1,
-                          }}
-                        >
-                          <Text sx={{ color: '#f6ad55', fontSize: '12px' }}>
-                            ⚠️ Content truncated for performance. Showing first{' '}
-                            {Math.round(50000 / 1024)}KB of{' '}
-                            {Math.round(rawDataDisplay.originalLength / 1024)}KB
-                          </Text>
-                        </Box>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleDownloadRawData}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#63b3ed',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '4px 8px',
-                          fontSize: '12px',
-                        }}
-                        title="Download full raw data as JSON"
-                      >
-                        <FiDownload size={14} />
-                        Download
-                      </button>
-                    </Box>
-                    <pre
-                      style={{
-                        fontSize: '11px',
-                        color: '#d1d5db',
-                        margin: 0,
-                        fontFamily: 'monospace',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {rawDataDisplay?.content || 'No data available'}
-                    </pre>
-                  </Box>
-                </Box>
+                <RawDataViewer
+                  rawData={rawData}
+                  rawDataDisplay={rawDataDisplay}
+                  onDownload={handleDownloadRawData}
+                />
               </DocumentField>
             )}
           </Box>
