@@ -71,6 +71,9 @@ function ResultsDisplay({
         {totalResults > 0 && (
           <Text
             sx={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translateX(-50%)',
               fontSize: 0,
               color: '#a0aec0',
               fontStyle: 'italic',
