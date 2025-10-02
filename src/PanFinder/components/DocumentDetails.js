@@ -433,8 +433,6 @@ function DocumentDetails({ details, isLoading, doi, statisticId }) {
                         justifyContent: 'flex-end',
                         alignItems: 'center',
                         bg: 'transparent',
-                        pb: 2,
-                        mb: 2,
                         zIndex: 1,
                         gap: 2,
                       }}
