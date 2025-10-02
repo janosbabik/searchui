@@ -23,9 +23,7 @@ function LoadingRow() {
               animation: 'spin 1s linear infinite',
             }}
           />
-          <Text sx={{ color: '#a0aec0', fontSize: '13px' }}>
-            Loading document details...
-          </Text>
+          <Text sx={{ color: '#a0aec0' }}>Loading document details...</Text>
         </Flex>
       </td>
     </tr>
@@ -37,7 +35,7 @@ function ErrorRow({ error }) {
     <tr>
       <td colSpan="4" style={{ padding: '16px' }}>
         <Box sx={{ bg: '#742a2a', p: 3, borderRadius: '4px' }}>
-          <Text sx={{ color: '#fed7d7', fontSize: '13px' }}>{error}</Text>
+          <Text sx={{ color: '#fed7d7' }}>{error}</Text>
         </Box>
       </td>
     </tr>
@@ -49,69 +47,78 @@ function FeedbackButtons({ feedbackLoading, feedbackStatus, handleFeedback }) {
     <Box
       sx={{
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'flex-end',
-        mt: 2,
-        mb: 3,
-        gap: 2,
       }}
     >
-      <Text
+      <Box
         sx={{
-          fontSize: '13px',
-          color: '#a0aec0',
-        }}
-      >
-        Was this what you were looking for?
-      </Text>
-      <button
-        type="button"
-        aria-label="Thumbs up"
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: feedbackLoading ? 'not-allowed' : 'pointer',
-          color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
-          fontSize: 18,
-          opacity: feedbackLoading ? 0.5 : 1,
-          padding: '4px',
+          background:
+            'linear-gradient(135deg, rgba(36, 114, 179, 0.2) 0%, rgba(100, 110, 177, 0.25) 25%, rgba(187, 70, 119, 0.2) 75%, rgba(12, 15, 22, 0.95) 100%)',
+          borderRadius: '8px',
+          overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
+          gap: 2,
+          p: 2,
         }}
-        disabled={feedbackLoading}
-        onClick={() => handleFeedback('positive')}
       >
-        <FiThumbsUp />
-      </button>
-      <button
-        type="button"
-        aria-label="Thumbs down"
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: feedbackLoading ? 'not-allowed' : 'pointer',
-          color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
-          fontSize: 18,
-          opacity: feedbackLoading ? 0.5 : 1,
-          padding: '4px',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-        disabled={feedbackLoading}
-        onClick={() => handleFeedback('negative')}
-      >
-        <FiThumbsDown />
-      </button>
-      {feedbackStatus === 'error' && (
         <Text
           sx={{
-            color: '#e53e3e',
-            fontSize: '12px',
+            fontSize: '13px',
+            color: '#a0aec0',
           }}
         >
-          Error submitting feedback
+          Was this what you were looking for?
         </Text>
-      )}
+        <button
+          type="button"
+          aria-label="Thumbs up"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: feedbackLoading ? 'not-allowed' : 'pointer',
+            color: feedbackStatus === 'positive' ? '#48bb78' : '#a0aec0',
+            fontSize: 18,
+            opacity: feedbackLoading ? 0.5 : 1,
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+          disabled={feedbackLoading}
+          onClick={() => handleFeedback('positive')}
+        >
+          <FiThumbsUp />
+        </button>
+        <button
+          type="button"
+          aria-label="Thumbs down"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: feedbackLoading ? 'not-allowed' : 'pointer',
+            color: feedbackStatus === 'negative' ? '#e53e3e' : '#a0aec0',
+            fontSize: 18,
+            opacity: feedbackLoading ? 0.5 : 1,
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+          disabled={feedbackLoading}
+          onClick={() => handleFeedback('negative')}
+        >
+          <FiThumbsDown />
+        </button>
+        {feedbackStatus === 'error' && (
+          <Text
+            sx={{
+              color: '#e53e3e',
+              fontSize: '13px',
+            }}
+          >
+            Error submitting feedback
+          </Text>
+        )}
+      </Box>
     </Box>
   )
 }
@@ -121,7 +128,7 @@ function DocumentField({ label, children }) {
     <Box>
       <Text
         sx={{
-          fontSize: '0.9em',
+          fontSize: '1em',
           fontWeight: 'bold',
           color: '#a0aec0',
           mb: 1,
@@ -234,7 +241,6 @@ function DocumentDetails({
             <DocumentField label="DOI">
               <Text
                 sx={{
-                  fontSize: '13px',
                   color: '#e2e8f0',
                   fontFamily: 'monospace',
                 }}
@@ -268,10 +274,7 @@ function DocumentDetails({
             <DocumentField label="Title">
               <Text
                 sx={{
-                  fontSize: '13px',
                   color: '#e2e8f0',
-                  lineHeight: 1.4,
-                  fontWeight: 'medium',
                 }}
               >
                 {details.title}
@@ -280,30 +283,13 @@ function DocumentDetails({
 
             {details.facility_name && (
               <DocumentField label="Facility">
-                <Text sx={{ fontSize: '13px', color: '#e2e8f0' }}>
-                  {details.facility_name}
-                </Text>
+                <Text sx={{ color: '#e2e8f0' }}>{details.facility_name}</Text>
               </DocumentField>
             )}
 
             {details.abstract && (
               <DocumentField label="Abstract">
-                <Box
-                  sx={{
-                    bg: '#2d3748',
-                    p: 2,
-                    borderRadius: '2px',
-                    border: '1px solid #4a5568',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  <Text
-                    sx={{ fontSize: '13px', color: '#e2e8f0', lineHeight: 1.5 }}
-                  >
-                    {details.abstract}
-                  </Text>
-                </Box>
+                <Text sx={{ color: '#e2e8f0' }}>{details.abstract}</Text>
               </DocumentField>
             )}
 
