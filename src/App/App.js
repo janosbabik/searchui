@@ -6,6 +6,7 @@ import { ThemeProvider } from 'styled-components'
 import ExplorePage from '../Explore/ExplorePage'
 import HomePage from '../Home/HomePage'
 import PanFinderPage from '../PanFinder/PanFinderPage'
+import { DocumentDataProvider } from '../PanFinder/contexts/DocumentDataContext'
 import { FeedbackProvider } from '../PanFinder/contexts/FeedbackContext'
 import { SessionProvider } from '../PanFinder/contexts/SessionContext'
 import { Box, Flex } from '../Primitives'
@@ -41,7 +42,9 @@ function App() {
               <Route exact path="/pan-finder">
                 <ScrollToTop />
                 <FeedbackProvider>
-                  <PanFinderPage />
+                  <DocumentDataProvider>
+                    <PanFinderPage />
+                  </DocumentDataProvider>
                 </FeedbackProvider>
               </Route>
               <Route exact path="/search">

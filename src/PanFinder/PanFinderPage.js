@@ -10,6 +10,7 @@ import ResultsDisplay from './components/ResultsDisplay'
 import SearchForm from './components/SearchForm'
 import StreamingSteps from './components/StreamingSteps'
 import TurnstileSessionGate from './components/TurnstileSessionGate'
+import { useDocumentData } from './contexts/DocumentDataContext'
 import { useSession } from './contexts/SessionContext'
 import { usePanFinderApi } from './hooks/usePanFinderApi'
 
@@ -18,9 +19,13 @@ function PanFinderPage() {
   const [expandedRows, setExpandedRows] = useState(new Set())
   const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
-  const [explanations, setExplanations] = useState({})
-  const [explanationErrors, setExplanationErrors] = useState({})
   const { sessionId, error: sessionError } = useSession()
+  const {
+    explanations,
+    setExplanation,
+    setExplanationError,
+    clearAll: clearDocumentData,
+  } = useDocumentData()
 
   const {
     data,
@@ -71,28 +76,22 @@ function PanFinderPage() {
       // Fetch explanation if not already loaded and we have a statistic ID
       const explanationKey = `${data?.id}|${doi}`
       if (data?.id && !explanations[explanationKey]) {
-        setExplanations((prev) => ({ ...prev, [explanationKey]: ' ' }))
-        setExplanationErrors((prev) => ({ ...prev, [explanationKey]: null }))
+        setExplanation(explanationKey, ' ')
+        setExplanationError(explanationKey, null)
 
         const controller = new AbortController()
 
         const handleEvent = (event) => {
           if (event.event === 'explanation_chunk') {
-            setExplanations((prev) => {
-              const current = prev[explanationKey] || ''
-              if (current === ' ')
-                return { ...prev, [explanationKey]: event.data?.content || '' }
-              return {
-                ...prev,
-                [explanationKey]: current + (event.data?.content || ''),
-              }
+            setExplanation(explanationKey, (current) => {
+              if (current === ' ') return event.data?.content || ''
+              return current + (event.data?.content || '')
             })
           } else if (event.event === 'error') {
-            setExplanationErrors((prev) => ({
-              ...prev,
-              [explanationKey]:
-                event.data?.message || 'Failed to generate explanation',
-            }))
+            setExplanationError(
+              explanationKey,
+              event.data?.message || 'Failed to generate explanation',
+            )
           }
         }
 
@@ -100,11 +99,10 @@ function PanFinderPage() {
           await explainDocument(data.id, doi, handleEvent, controller.signal)
         } catch (error_) {
           if (error_.name !== 'AbortError') {
-            setExplanationErrors((prev) => ({
-              ...prev,
-              [explanationKey]:
-                error_.message || 'Failed to generate explanation',
-            }))
+            setExplanationError(
+              explanationKey,
+              error_.message || 'Failed to generate explanation',
+            )
           }
         }
       }
@@ -120,20 +118,19 @@ function PanFinderPage() {
     setExpandedRows(new Set())
     setDocumentDetails({})
     setLoadingDetails(new Set())
-    setExplanations({})
-    setExplanationErrors({})
+    clearDocumentData()
 
     await search(inputValue)
   }
 
-  const handleStructuredSearch = (id, structuredData) => {
+  const handleStructuredSearch = async (id, structuredData) => {
     // Clear previous results state to prepare for new search
     setExpandedRows(new Set())
     setDocumentDetails({})
     setLoadingDetails(new Set())
-    setExplanations({})
-    setExplanationErrors({})
-    searchWithStructuredData(id, structuredData)
+    clearDocumentData()
+
+    await searchWithStructuredData(id, structuredData)
   }
 
   function handleSubmit(evt) {
@@ -159,8 +156,7 @@ function PanFinderPage() {
     setExpandedRows(new Set())
     setDocumentDetails({})
     setLoadingDetails(new Set())
-    setExplanations({})
-    setExplanationErrors({})
+    clearDocumentData()
     reset()
   }
 
@@ -189,8 +185,6 @@ function PanFinderPage() {
           documentDetails={documentDetails}
           loadingDetails={loadingDetails}
           handleRowExpand={handleRowExpand}
-          explanations={explanations}
-          explanationErrors={explanationErrors}
         />
         <QueryDetails data={data} onStructuredSearch={handleStructuredSearch} />
 

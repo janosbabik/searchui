@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { FiThumbsUp, FiThumbsDown, FiEye } from 'react-icons/fi'
+import { FiThumbsUp, FiThumbsDown, FiEye, FiDownload } from 'react-icons/fi'
 import { Flex, Box, Text, Button } from '../../Primitives'
+import { useDocumentData } from '../contexts/DocumentDataContext'
 import { useFeedback } from '../contexts/FeedbackContext'
 import { usePanFinderApi } from '../hooks/usePanFinderApi'
 import ExplanationDisplay from './ExplanationDisplay'
@@ -141,19 +142,28 @@ function DocumentField({ label, children }) {
   )
 }
 
-function DocumentDetails({
-  details,
-  isLoading,
-  explanation,
-  explanationError,
-}) {
+function DocumentDetails({ details, isLoading, doi, statisticId }) {
   const { submitFeedback, fetchRawDocument } = usePanFinderApi()
   const { feedbacks, setFeedback, currentQueryId } = useFeedback()
+  const {
+    rawDataCache,
+    rawDataErrors,
+    explanations,
+    explanationErrors,
+    setRawData,
+    setRawDataError,
+  } = useDocumentData()
   const [feedbackStatus, setFeedbackStatus] = useState(null)
   const [feedbackLoading, setFeedbackLoading] = useState(false)
-  const [rawData, setRawData] = useState(null)
   const [rawDataLoading, setRawDataLoading] = useState(false)
-  const [rawDataError, setRawDataError] = useState(null)
+
+  const rawData = details?.doi ? rawDataCache[details.doi] : null
+  const rawDataError = details?.doi ? rawDataErrors[details.doi] : null
+
+  // Get explanation from context using statisticId and doi
+  const explanationKey = `${statisticId}|${doi}`
+  const explanation = explanations[explanationKey]
+  const explanationError = explanationErrors[explanationKey]
 
   useEffect(() => {
     if (details?.doi && currentQueryId && feedbacks) {
@@ -192,16 +202,71 @@ function DocumentDetails({
       return
     }
     setRawDataLoading(true)
-    setRawDataError(null)
+    setRawDataError(details.doi, null)
     try {
       const rawResult = await fetchRawDocument(details.doi)
-      setRawData(rawResult)
+      setRawData(details.doi, rawResult)
     } catch (error) {
-      setRawDataError(error.message)
+      setRawDataError(details.doi, error.message)
     } finally {
       setRawDataLoading(false)
     }
   }
+
+  const handleDownloadRawData = () => {
+    if (!rawData) return
+
+    const jsonString =
+      typeof rawData === 'object'
+        ? JSON.stringify(rawData, null, 2)
+        : String(rawData)
+
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `raw-data-${details.doi.replace(/\//g, '-')}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  // Safely stringify and truncate large raw data
+  const getRawDataDisplay = () => {
+    if (!rawData) return null
+
+    try {
+      const jsonString =
+        typeof rawData === 'object'
+          ? JSON.stringify(rawData, null, 2)
+          : String(rawData)
+
+      const maxLength = 50000 // ~50KB limit for display
+      if (jsonString.length > maxLength) {
+        const truncated = jsonString.slice(0, maxLength)
+        return {
+          content: truncated,
+          isTruncated: true,
+          originalLength: jsonString.length,
+        }
+      }
+
+      return {
+        content: jsonString,
+        isTruncated: false,
+        originalLength: jsonString.length,
+      }
+    } catch (error) {
+      return {
+        content: 'Error: Unable to display raw data',
+        isTruncated: false,
+        originalLength: 0,
+      }
+    }
+  }
+
+  const rawDataDisplay = getRawDataDisplay()
 
   if (isLoading) {
     return <LoadingRow />
@@ -341,30 +406,80 @@ function DocumentDetails({
             )}
             {rawData && (
               <DocumentField label="Raw Data">
-                <Box
-                  sx={{
-                    bg: '#111827',
-                    p: 2,
-                    borderRadius: '4px',
-                    border: '1px solid #4a5568',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                  }}
-                >
-                  <pre
-                    style={{
-                      fontSize: '11px',
-                      color: '#d1d5db',
-                      margin: 0,
-                      fontFamily: 'monospace',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
+                <Box sx={{ position: 'relative' }}>
+                  <Box
+                    sx={{
+                      bg: '#111827',
+                      p: 2,
+                      borderRadius: '4px',
+                      border: '1px solid #4a5568',
+                      maxHeight: '400px',
+                      overflowY: 'auto',
                     }}
                   >
-                    {typeof rawData === 'object'
-                      ? JSON.stringify(rawData, null, 2)
-                      : rawData}
-                  </pre>
+                    <Box
+                      sx={{
+                        position: 'sticky',
+                        top: 0,
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                        bg: 'transparent',
+                        pb: 2,
+                        mb: 2,
+                        zIndex: 1,
+                        gap: 2,
+                      }}
+                    >
+                      {rawDataDisplay?.isTruncated && (
+                        <Box
+                          sx={{
+                            p: 2,
+                            bg: '#2d3748',
+                            borderRadius: '4px',
+                            flex: 1,
+                          }}
+                        >
+                          <Text sx={{ color: '#f6ad55', fontSize: '12px' }}>
+                            ⚠️ Content truncated for performance. Showing first{' '}
+                            {Math.round(50000 / 1024)}KB of{' '}
+                            {Math.round(rawDataDisplay.originalLength / 1024)}KB
+                          </Text>
+                        </Box>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleDownloadRawData}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#63b3ed',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          fontSize: '12px',
+                        }}
+                        title="Download full raw data as JSON"
+                      >
+                        <FiDownload size={14} />
+                        Download
+                      </button>
+                    </Box>
+                    <pre
+                      style={{
+                        fontSize: '11px',
+                        color: '#d1d5db',
+                        margin: 0,
+                        fontFamily: 'monospace',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {rawDataDisplay?.content || 'No data available'}
+                    </pre>
+                  </Box>
                 </Box>
               </DocumentField>
             )}

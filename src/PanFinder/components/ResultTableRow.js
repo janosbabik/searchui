@@ -44,8 +44,6 @@ function ResultTableRow({
   isLoadingDetails,
   resultType,
   statisticId,
-  explanation,
-  explanationError,
 }) {
   const relevanceInfo = getRelevanceDisplay(resultType, result.overall_score)
 
@@ -182,8 +180,6 @@ function ResultTableRow({
           isLoading={isLoadingDetails}
           doi={result.doi}
           statisticId={statisticId}
-          explanation={explanation}
-          explanationError={explanationError}
         />
       )}
     </>
