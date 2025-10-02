@@ -147,9 +147,10 @@ function DocumentDetails({ details, isLoading, doi, statisticId }) {
   const { feedbacks, setFeedback, currentQueryId } = useFeedback()
   const {
     rawDataCache,
-    rawDataErrors,
     explanations,
+    documentDetailsErrors,
     explanationErrors,
+    rawDataErrors,
     setRawData,
     setRawDataError,
   } = useDocumentData()
@@ -158,12 +159,13 @@ function DocumentDetails({ details, isLoading, doi, statisticId }) {
   const [rawDataLoading, setRawDataLoading] = useState(false)
 
   const rawData = details?.doi ? rawDataCache[details.doi] : null
-  const rawDataError = details?.doi ? rawDataErrors[details.doi] : null
 
-  // Get explanation from context using statisticId and doi
+  // Get explanation and errors from context using statisticId and doi
   const explanationKey = `${statisticId}|${doi}`
   const explanation = explanations[explanationKey]
   const explanationError = explanationErrors[explanationKey]
+  const documentDetailsError = documentDetailsErrors[doi]
+  const rawDataError = rawDataErrors[doi]
 
   useEffect(() => {
     if (details?.doi && currentQueryId && feedbacks) {
@@ -202,11 +204,17 @@ function DocumentDetails({ details, isLoading, doi, statisticId }) {
       return
     }
     setRawDataLoading(true)
+    // Clear error on retry
     setRawDataError(details.doi, null)
     try {
       const rawResult = await fetchRawDocument(details.doi)
       setRawData(details.doi, rawResult)
+      // Clear error on success
+      setRawDataError(details.doi, null)
     } catch (error) {
+      // Remove from cache so it can be retried
+      setRawData(details.doi, null)
+      // Show error but allow retry
       setRawDataError(details.doi, error.message)
     } finally {
       setRawDataLoading(false)
@@ -271,8 +279,8 @@ function DocumentDetails({ details, isLoading, doi, statisticId }) {
   if (isLoading) {
     return <LoadingRow />
   }
-  if (details?.error) {
-    return <ErrorRow error={details.error} />
+  if (documentDetailsError) {
+    return <ErrorRow error={documentDetailsError} />
   }
   if (!details) {
     return null

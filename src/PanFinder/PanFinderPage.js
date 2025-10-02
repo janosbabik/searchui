@@ -17,12 +17,14 @@ import { usePanFinderApi } from './hooks/usePanFinderApi'
 function PanFinderPage() {
   const [inputValue, setInputValue] = useState('')
   const [expandedRows, setExpandedRows] = useState(new Set())
-  const [documentDetails, setDocumentDetails] = useState({})
   const [loadingDetails, setLoadingDetails] = useState(new Set())
   const { sessionId, error: sessionError } = useSession()
   const {
     explanations,
+    documentDetails,
     setExplanation,
+    setDocumentDetails,
+    setDocumentDetailsError,
     setExplanationError,
     clearAll: clearDocumentData,
   } = useDocumentData()
@@ -60,12 +62,17 @@ function PanFinderPage() {
 
         try {
           const details = await fetchDocumentDetails(doi)
-          setDocumentDetails((prev) => ({ ...prev, [doi]: details }))
+          setDocumentDetails(doi, details)
+          // Clear any previous error
+          setDocumentDetailsError(doi, null)
         } catch (error_) {
-          setDocumentDetails((prev) => ({
-            ...prev,
-            [doi]: { error: error_.message },
-          }))
+          // Remove from cache so it can be retried
+          setDocumentDetails(doi, null)
+          // Show error but don't cache in documentDetails - allow retry
+          setDocumentDetailsError(
+            doi,
+            error_.message || 'Failed to load document details',
+          )
         } finally {
           const newLoadingDetailsAfter = new Set(loadingDetails)
           newLoadingDetailsAfter.delete(doi)
@@ -88,6 +95,9 @@ function PanFinderPage() {
               return current + (event.data?.content || '')
             })
           } else if (event.event === 'error') {
+            // Remove from cache so it can be retried
+            setExplanation(explanationKey, null)
+            // Show error but don't cache in context - stored for display
             setExplanationError(
               explanationKey,
               event.data?.message || 'Failed to generate explanation',
@@ -99,6 +109,9 @@ function PanFinderPage() {
           await explainDocument(data.id, doi, handleEvent, controller.signal)
         } catch (error_) {
           if (error_.name !== 'AbortError') {
+            // Remove from cache so it can be retried
+            setExplanation(explanationKey, null)
+            // Show error but don't cache in context
             setExplanationError(
               explanationKey,
               error_.message || 'Failed to generate explanation',
@@ -116,7 +129,6 @@ function PanFinderPage() {
 
     // Clear previous results state to prepare for new search
     setExpandedRows(new Set())
-    setDocumentDetails({})
     setLoadingDetails(new Set())
     clearDocumentData()
 
@@ -126,7 +138,6 @@ function PanFinderPage() {
   const handleStructuredSearch = async (id, structuredData) => {
     // Clear previous results state to prepare for new search
     setExpandedRows(new Set())
-    setDocumentDetails({})
     setLoadingDetails(new Set())
     clearDocumentData()
 
@@ -154,7 +165,6 @@ function PanFinderPage() {
   function handleClear() {
     setInputValue('')
     setExpandedRows(new Set())
-    setDocumentDetails({})
     setLoadingDetails(new Set())
     clearDocumentData()
     reset()

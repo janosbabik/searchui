@@ -2,16 +2,24 @@ import React, { createContext, useContext, useState, useCallback } from 'react'
 
 const DocumentDataContext = createContext({
   explanations: {},
-  explanationErrors: {},
   rawDataCache: {},
+  documentDetails: {},
+  documentDetailsErrors: {},
+  explanationErrors: {},
   rawDataErrors: {},
   setExplanation: () => {
     /* default no-op */
   },
-  setExplanationError: () => {
+  setRawData: () => {
     /* default no-op */
   },
-  setRawData: () => {
+  setDocumentDetails: () => {
+    /* default no-op */
+  },
+  setDocumentDetailsError: () => {
+    /* default no-op */
+  },
+  setExplanationError: () => {
     /* default no-op */
   },
   setRawDataError: () => {
@@ -24,12 +32,20 @@ const DocumentDataContext = createContext({
 
 export function DocumentDataProvider({ children }) {
   const [explanations, setExplanations] = useState({})
-  const [explanationErrors, setExplanationErrors] = useState({})
   const [rawDataCache, setRawDataCache] = useState({})
-  const [rawDataErrors, setRawDataErrors] = useState({})
+  const [documentDetails, setDocumentDetailsState] = useState({})
+  const [documentDetailsErrors, setDocumentDetailsErrorsState] = useState({})
+  const [explanationErrors, setExplanationErrorsState] = useState({})
+  const [rawDataErrors, setRawDataErrorsState] = useState({})
 
   const setExplanation = useCallback((key, content) => {
     setExplanations((prev) => {
+      // If content is null, remove the key
+      if (content === null) {
+        // eslint-disable-next-line no-unused-vars
+        const { [key]: _removed, ...rest } = prev
+        return rest
+      }
       // If content is a function, call it with current value
       if (typeof content === 'function') {
         return {
@@ -44,22 +60,52 @@ export function DocumentDataProvider({ children }) {
     })
   }, [])
 
+  const setRawData = useCallback((doi, data) => {
+    setRawDataCache((prev) => {
+      // If data is null, remove the key
+      if (data === null) {
+        // eslint-disable-next-line no-unused-vars
+        const { [doi]: _removed, ...rest } = prev
+        return rest
+      }
+      return {
+        ...prev,
+        [doi]: data,
+      }
+    })
+  }, [])
+
+  const setDocumentDetails = useCallback((doi, details) => {
+    setDocumentDetailsState((prev) => {
+      // If details is null, remove the key
+      if (details === null) {
+        // eslint-disable-next-line no-unused-vars
+        const { [doi]: _removed, ...rest } = prev
+        return rest
+      }
+      return {
+        ...prev,
+        [doi]: details,
+      }
+    })
+  }, [])
+
+  const setDocumentDetailsError = useCallback((doi, error) => {
+    setDocumentDetailsErrorsState((prev) => ({
+      ...prev,
+      [doi]: error,
+    }))
+  }, [])
+
   const setExplanationError = useCallback((key, error) => {
-    setExplanationErrors((prev) => ({
+    setExplanationErrorsState((prev) => ({
       ...prev,
       [key]: error,
     }))
   }, [])
 
-  const setRawData = useCallback((doi, data) => {
-    setRawDataCache((prev) => ({
-      ...prev,
-      [doi]: data,
-    }))
-  }, [])
-
   const setRawDataError = useCallback((doi, error) => {
-    setRawDataErrors((prev) => ({
+    setRawDataErrorsState((prev) => ({
       ...prev,
       [doi]: error,
     }))
@@ -67,9 +113,11 @@ export function DocumentDataProvider({ children }) {
 
   const clearAll = useCallback(() => {
     setExplanations({})
-    setExplanationErrors({})
     setRawDataCache({})
-    setRawDataErrors({})
+    setDocumentDetailsState({})
+    setDocumentDetailsErrorsState({})
+    setExplanationErrorsState({})
+    setRawDataErrorsState({})
   }, [])
 
   return React.createElement(
@@ -77,12 +125,16 @@ export function DocumentDataProvider({ children }) {
     {
       value: {
         explanations,
-        explanationErrors,
         rawDataCache,
+        documentDetails,
+        documentDetailsErrors,
+        explanationErrors,
         rawDataErrors,
         setExplanation,
-        setExplanationError,
         setRawData,
+        setDocumentDetails,
+        setDocumentDetailsError,
+        setExplanationError,
         setRawDataError,
         clearAll,
       },
