@@ -47,13 +47,16 @@ function ErrorRow({ error }) {
 
 function DocumentField({ label, children }) {
   return (
-    <Box>
+    <Box
+      sx={{
+        mb: 1.5,
+      }}
+    >
       <Text
         sx={{
           fontSize: '1em',
           fontWeight: 'bold',
           color: '#a0aec0',
-          mb: 1,
         }}
       >
         {label}
