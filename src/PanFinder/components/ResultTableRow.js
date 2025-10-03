@@ -7,31 +7,23 @@ import DocumentDetails from './DocumentDetails/DocumentDetails'
 export function getScoreBackgroundColor({ overall_score: overallScore }) {
   const red = Math.round(120 * (1 - overallScore))
   const green = Math.round(100 * overallScore)
-  return `rgb(${red}, ${green}, 0)`
+  return {
+    bgColor: `rgba(${red}, ${green}, 0, 0.2)`,
+    borderColor: `rgb(${red}, ${green}, 0)`,
+  }
 }
 
-function getRelevanceDisplay(resultType, overallScore) {
+function getRelevanceDisplay(overallScore) {
   const label = overallScore ? `${Math.round(overallScore * 100)}%` : 'N/A'
-  if (resultType === 'relevant') {
-    return {
-      label,
-      color: '#48bb78',
-      bgColor: '#1a2e1a',
-      borderColor: '#48bb78',
-    }
-  } else if (resultType === 'weakly_relevant') {
-    return {
-      label,
-      color: '#f6ad55',
-      bgColor: '#2d2014',
-      borderColor: '#f6ad55',
-    }
-  }
+  const { bgColor, borderColor } = overallScore
+    ? getScoreBackgroundColor({ overall_score: overallScore })
+    : '#141b27ff'
+
   return {
-    label: 'Unknown',
-    color: '#a0aec0',
-    bgColor: '#2d3748',
-    borderColor: '#a0aec0',
+    label,
+    color: '#ffffff',
+    bgColor,
+    borderColor,
   }
 }
 
@@ -45,7 +37,7 @@ function ResultTableRow({
   resultType,
   statisticId,
 }) {
-  const relevanceInfo = getRelevanceDisplay(resultType, result.overall_score)
+  const relevanceInfo = getRelevanceDisplay(result.overall_score)
 
   // Adjust row colors based on relevance
   const baseRowColor =
@@ -159,15 +151,22 @@ function ResultTableRow({
         <td
           style={{
             textAlign: 'center',
-            backgroundColor: getScoreBackgroundColor(result),
-            fontWeight: '600',
+            padding: '8px',
           }}
         >
           <span
             style={{
+              minWidth: '55px',
+              display: 'inline-block',
               fontSize: '11px',
               fontWeight: '600',
               letterSpacing: '0.5px',
+              color: relevanceInfo.color,
+              border: `1px solid ${relevanceInfo.borderColor}`,
+              backgroundColor: relevanceInfo.bgColor,
+              borderRadius: '24px',
+              paddingTop: '4px',
+              paddingBottom: '4px',
             }}
           >
             {relevanceInfo.label}
