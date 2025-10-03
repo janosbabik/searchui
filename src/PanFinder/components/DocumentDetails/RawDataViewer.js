@@ -7,6 +7,7 @@ function RawDataViewer({ rawData, rawDataDisplay, onDownload }) {
     <Box sx={{ position: 'relative' }}>
       <Box
         sx={{
+          mt: 2,
           bg: '#111827',
           p: 2,
           borderRadius: '4px',
